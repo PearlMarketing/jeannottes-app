@@ -9,7 +9,7 @@ const SizePicker = ({
   product,
   slideY,
   slideDown,
-  pickerValues,
+  pickerOptions,
   setSelectedVariation,
 }) => {
   const [viewHeight, setViewHeight] = React.useState(0);
@@ -36,7 +36,7 @@ const SizePicker = ({
         ],
       }}
     >
-      {pickerValues.map((option) => (
+      {pickerOptions.map((option) => (
         <TouchableOpacity
           key={option.id}
           style={{

@@ -9,8 +9,8 @@ const OptionPicker = ({
   product,
   slideY,
   slideDown,
-  pickerValues,
-  pickerOption,
+  pickerOptions,
+  pickerName,
   selectedOptions,
   setSelectedOptions,
 }) => {
@@ -26,7 +26,8 @@ const OptionPicker = ({
         marginTop: 15,
         position: 'absolute',
         bottom: 0,
-        bottom: isIphoneX ? 30 : 0,
+        paddingBottom: isIphoneX ? 30 : 0,
+        backgroundColor: 'white',
         transform: [
           {
             translateY: slideY.interpolate({
@@ -37,9 +38,9 @@ const OptionPicker = ({
         ],
       }}
     >
-      {pickerValues.map((option) => (
+      {pickerOptions.map((option) => (
         <TouchableOpacity
-          key={option.name}
+          key={option}
           style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
@@ -51,10 +52,10 @@ const OptionPicker = ({
           }}
           onPress={() => {
             const optionIndex = selectedOptions.findIndex(
-              (e) => e.option === pickerOption
+              (e) => e.option === pickerName
             );
             let updatedOption = [...selectedOptions];
-            updatedOption[optionIndex] = {...updatedOption[optionIndex], value: option.name}
+            updatedOption[optionIndex] = {...updatedOption[optionIndex], value: option}
             setSelectedOptions(updatedOption);
             slideDown();
           }}
@@ -67,7 +68,7 @@ const OptionPicker = ({
               }}
             >
               {/* Option */}
-              {option.name}
+              {option}
             </Text>
           </View>
           {/* Price, if applicable */}

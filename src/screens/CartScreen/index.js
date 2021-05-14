@@ -1,188 +1,205 @@
-function editOrder(action, menuId, price) {
-  let orderList = orderItems.slice();
-  let item = orderList.filter((a) => a.menuId == menuId);
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  StatusBar,
+} from 'react-native';
+import { observer, inject } from 'mobx-react';
+import { useIsFocused } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+import Header from '../../components/Header';
+import Loader from '../../components/Loader';
 
-  if (action == '+') {
-    if (product.length > 0) {
-      let newQty = item[0].qty + 1;
-      item[0].qty = newQty;
-      item[0].total = item[0].qty * price;
-    } else {
-      const newItem = {
-        menuId: menuId,
-        qty: 1,
-        price: price,
-        total: price,
-      };
-      orderList.push(newItem);
+import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import Service from '../../services/services';
+
+const CartScreen = inject('shop')(
+  observer(({ shop: { cart }, route, navigation }) => {
+    function FocusAwareStatusBar(props) {
+      const isFocused = useIsFocused();
+      return isFocused ? <StatusBar {...props} /> : null;
     }
-    setOrderItems(orderList);
-  } else {
-    if (product.length > 0) {
-      if (item[0]?.qty > 0) {
-        let newQty = item[0].qty - 1;
-        item[0].qty = newQty;
-        item[0].total = newQty * price;
-      }
-    }
-    setOrderItems(orderList);
-  }
-}
 
-function getOrderQty(menuId) {
-  let orderItem = orderItems.filter((a) => a.menuId == menuId);
-  if (orderItem.length > 0) {
-    return orderItem[0].qty;
-  } else {
-    return 0;
-  }
-}
+    const LineItem = ({ item }) => (
+      <TouchableOpacity
+        style={{
+          width: SIZES.width,
+        }}
+        onPress={() =>
+          navigation.navigate('Product', {
+            params: { item:item.product }
+            // item:item.product,
+          })
+        }
+      >
+        <View
+          style={{
+            width: '100%',
+            backgroundColor: COLORS.white,
+            color: COLORS.primary,
+            paddingVertical: SIZES.padding,
+            paddingHorizontal: SIZES.padding * 2,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottomWidth: 1,
+          }}
+        >
+          <View>
+            <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
+            <Text style={{ ...FONTS.body3 }}>Options</Text>
+          </View>
+          <Text style={{ ...FONTS.h4 }}>${item.price}</Text>
+        </View>
+      </TouchableOpacity>
+    );
 
-function getBasketItemCount() {
-  let itemCount = orderItems.reduce((a, b) => a + (b.qty || 0), 0);
-
-  return itemCount;
-}
-
-function sumOrder() {
-  let total = orderItems.reduce((a, b) => a + (b.total || 0), 0);
-
-  return total.toFixed(2);
-}
-
-function renderOrder() {
-  return (
-    <View>
-      {renderDots()}
+    const LineTotal = ({ text, total }) => (
       <View
         style={{
-          backgroundColor: COLORS.white,
-          borderTopLeftRadius: 40,
-          borderTopRightRadius: 40,
+          width: SIZES.width,
         }}
       >
         <View
           style={{
+            width: '100%',
+            backgroundColor: COLORS.white,
+            color: COLORS.primary,
+            paddingVertical: SIZES.padding,
+            paddingHorizontal: SIZES.padding * 2,
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingVertical: SIZES.padding * 2,
-            paddingHorizontal: SIZES.padding * 3,
-            borderBottomColor: COLORS.lightGray2,
+            alignItems: 'center',
+            justifyContent: 'flex-end',
             borderBottomWidth: 1,
           }}
         >
-          <Text
-            style={{
-              ...FONTS.h3,
-            }}
-          >
-            {getBasketItemCount()} Items in cart
+          <Text style={{ ...FONTS.h4 }}>
+            {text}: ${total}
           </Text>
-          <Text
-            style={{
-              ...FONTS.h3,
-            }}
-          >
-            ${sumOrder()}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingVertical: SIZES.padding * 2,
-            paddingHorizontal: SIZES.padding * 3,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <Image
-              source={icons.pin}
-              resizeMode='contain'
-              style={{
-                width: 20,
-                height: 20,
-                tintColor: COLORS.darkgray,
-              }}
-            />
-            <Text
-              style={{
-                marginLeft: SIZES.padding,
-                ...FONTS.h4,
-              }}
-            >
-              Locations
-            </Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <Image
-              source={icons.master_card}
-              resizeMode='contain'
-              style={{
-                width: 20,
-                height: 20,
-                tintColor: COLORS.darkgray,
-              }}
-            />
-            <Text
-              style={{
-                marginLeft: SIZES.padding,
-                ...FONTS.h4,
-              }}
-            >
-              8888
-            </Text>
-          </View>
-        </View>
-
-        {/* Order Button */}
-        <View
-          style={{
-            padding: SIZES.padding * 2,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <TouchableOpacity
-            style={{
-              width: SIZES.width * 0.9,
-              padding: SIZES.padding,
-              backgroundColor: COLORS.primary,
-              alignItems: 'center',
-              borderRadius: SIZES.radius,
-            }}
-            onPress={() =>
-              navigation.navigate('Home', {
-                product: product,
-              })
-            }
-          >
-            <Text style={{ color: COLORS.white, ...FONTS.h2 }}>Order</Text>
-          </TouchableOpacity>
         </View>
       </View>
+    );
 
-      {isIphoneX() && (
-        <View
-          style={{
-            position: 'absolute',
-            bottom: -34,
-            left: 0,
-            right: 0,
-            height: 34,
-            backgroundColor: COLORS.white,
-          }}
-        ></View>
-      )}
-    </View>
-  );
-}
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={['top', 'right', 'bottom', 'left']}
+      >
+        <FocusAwareStatusBar barStyle='dark-content' />
+        <Header route={route} navigation={navigation} dark />
+        {/* {isLoadingProduct ? (
+        <Loader />
+      ) : ( */}
+        <>
+          <View
+            style={{
+              // paddingTop: SIZES.padding,
+              paddingBottom: SIZES.padding,
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                marginVertical: 10,
+                ...FONTS.h2,
+                color: COLORS.primary,
+              }}
+            >
+              Cart
+            </Text>
+          </View>
+
+          {/* Line Items */}
+          {cart.entries.map((entry) => (
+            <LineItem key={entry.id} item={{ product: entry.product, name: entry.product.name, price: '7.99' }} />
+          ))}
+
+          {/* Totals */}
+          <View>
+            <LineTotal text='Subtotal' total='23.97' />
+          </View>
+
+          {/* Order Button */}
+          <View
+            style={{
+              padding: SIZES.padding * 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'absolute',
+              width: SIZES.width,
+              bottom: 0,
+              paddingBottom: isIphoneX ? 30 : 0,
+              // backgroundColor: 'white',
+            }}
+          >
+            <TouchableOpacity
+              style={{
+                backgroundColor: COLORS.primary,
+                width: '100%',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                ...styles.shadow,
+                borderRadius: SIZES.radius * 2,
+              }}
+              onPress={() =>
+                navigation.navigate('Checkout', {
+                  // product: product,
+                  // selectedOptions: selectedOptions,
+                })
+              }
+            >
+              <Text
+                style={{
+                  color: COLORS.white,
+                  ...FONTS.h3,
+                }}
+              >
+                Checkout
+              </Text>
+              <Ionicons
+                name='arrow-forward'
+                style={{
+                  color: COLORS.white,
+                  position: 'absolute',
+                  right: 20,
+                  // ...FONTS.h3,
+                }}
+                size={26}
+              />
+            </TouchableOpacity>
+          </View>
+        </>
+        {/* )} */}
+      </SafeAreaView>
+    );
+  })
+);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.lightGray2,
+  },
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  select: {},
+});
+
+export default CartScreen;

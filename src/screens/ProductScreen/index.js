@@ -7,11 +7,14 @@ import {
   Image,
   Animated,
   StatusBar,
+  ScrollView,
+  FlatList
 } from 'react-native';
+import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { isIphoneX } from 'react-native-iphone-x-helper';
+// import { Ionicons } from '@expo/vector-icons';
+// import { isIphoneX } from 'react-native-iphone-x-helper';
 import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 
@@ -19,180 +22,203 @@ import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 
 import ProductInfo from './ProductInfo';
-import ProductOptions from './ProductOptions';
 import BreadOptions from './BreadOptions';
-import SizePicker from './SizePicker';
+import ProductOptions from './ProductOptions'
 import OptionPicker from './OptionPicker';
 
-const ProductScreen = ({ route, navigation }) => {
-  const [product, setProduct] = React.useState(null);
-  const [productVariations, setProductVariations] = React.useState([]);
-  const [productEPO, setProductEPO] = React.useState();
-  const [sizeOptions, setSizeOptions] = React.useState([]);
-  const [breadOptions, setBreadOptions] = React.useState([]);
-  const [isLoadingProduct, setIsLoadingProduct] = React.useState(null);
-  const [orderItems, setOrderItems] = React.useState([]);
+const ProductScreen = inject('shop')(
+  observer(({ shop, route, navigation }) => {
+    // const [productId, setProductId] = React.useState(null)
+    const [product, setProduct] = React.useState(null);
 
-  // Selected product options
-  const [selectedOptions, setSelectedOptions] = React.useState([
-    {
-      option: 'Size',
-      value: 'Small',
-      price: 0,
-    },
-    {
-      option: 'Bread',
-      value: 'White Roll',
-    },
-    {
-      option: 'Cheese',
-      value: 'American',
-    },
-  ]);
+    // Selected product options
+    const [selectedOptions, setSelectedOptions] = React.useState([
+      {
+        option: 'Size',
+        value: 'Small',
+        price: 0,
+      },
+      {
+        option: 'Choose Your Bread',
+        value: 'White Roll',
+      },
+      {
+        option: 'Choose Your Cheese',
+        value: 'American',
+      },
+    ]);
 
-  // show an array of options to populate picker
-  const [pickerOption, setPickerOption] = React.useState(null);
-  const [pickerValues, setPickerValues] = React.useState([]);
-  const slideY = React.useRef(new Animated.Value(0)).current;
+    // show an array of options to populate picker
+    const [pickerName, setPickerName] = React.useState(null);
+    const [pickerOptions, setPickerOptions] = React.useState([]);
+    const slideY = React.useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
-    // passes down selected item
-    let { item } = route.params;
-    setProduct(item);
+    React.useEffect(() => {
+      // passes down selected item
+      let { item } = route.params;
+      setProduct(item);
+      shop.variationStore.loadVariations(item)
 
-    // loads product sizes
-    setIsLoadingProduct(true);
-    Service.ProductVariations(item.id)
-      .then((res) => {
-        let sizeList = [];
-        res.data.map((variation) => {
-          sizeList.push({
-            id: variation.id,
-            name: variation.attributes[0].option,
-            price: parseFloat(variation.price),
-          });
-        });
-        setSizeOptions(sizeList);
+    //   // loads product sizes
+    //   setIsLoadingProduct(true);
+    //   Service.ProductVariations(item.id)
+    //     .then((res) => {
+    //       let sizeList = [];
+    //       res.data.map((variation) => {
+    //         sizeList.push({
+    //           id: variation.id,
+    //           name: variation.attributes[0].option,
+    //           price: parseFloat(variation.price),
+    //         });
+    //       });
+    //       setSizeOptions(sizeList);
 
-        const optionIndex = selectedOptions.findIndex(
-          (e) => e.option === 'Size'
-        );
-        let updatedOption = [...selectedOptions];
-        updatedOption[optionIndex] = {
-          ...updatedOption[optionIndex],
-          ...sizeList[0],
-        };
-        console.log(updatedOption);
-        setSelectedOptions(updatedOption);
-        // setSelectedOptions([
-        //   ...selectedOptions,
-        //   {
-        //     option: 'Size',
-        //     ...sizeList[0]
-        //   }
-        // ])
-        // setSelectedVariation(variationsList[0]);
-      })
-      .finally(() => {
-        setIsLoadingProduct(false);
-      });
+    //       const optionIndex = selectedOptions.findIndex(
+    //         (e) => e.option === 'Size'
+    //       );
+    //       let updatedOption = [...selectedOptions];
+    //       updatedOption[optionIndex] = {
+    //         ...updatedOption[optionIndex],
+    //         ...sizeList[0],
+    //       };
+    //       setSelectedOptions(updatedOption);
+    //     })
+    //     .finally(() => {
+    //       setIsLoadingProduct(false);
+    //     });
 
-    // loads EPO
-    Service.ProductEPO()
-      .then((res) => {
-        const standardEPO = res.data.filter((e) => e.id === 1773)[0].tm_meta
-          .tmfbuilder;
-        setProductEPO(standardEPO);
-        let breadList = [];
-        standardEPO.multiple_radiobuttons_options_title[0].map((option) => {
-          breadList.push({ name: option });
-        });
-        setBreadOptions(breadList);
-      })
-      .finally(() => {
-        // console.log(selectedOptions);
-      });
-  }, []);
+    //   // loads EPO
+    //   Service.ProductEPO()
+    //     .then((res) => {
+    //       const standardEPO = res.data.filter((e) => e.id === 1773)[0].tm_meta
+    //         .tmfbuilder;
+    //       let breadList = [];
+    //       standardEPO.multiple_radiobuttons_options_title[0].map((option) => {
+    //         breadList.push({ name: option });
+    //       });
+    //       setBreadOptions(breadList);
+    //       let cheeseList = [];
+    //       standardEPO.multiple_radiobuttons_options_title[1].map((option) => {
+    //         cheeseList.push({ name: option });
+    //       });
+    //       setCheeseOptions(cheeseList);
+    //     })
+    //     .finally(() => {
+    //       // console.log(selectedOptions);
+    //     });
+    }, []);
 
-  const showOptions = (productOptions, optionName) => {
-    setPickerOption(optionName);
-    setPickerValues(productOptions);
-    Animated.timing(slideY, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+    const showOptions = (options, name) => {
+      setPickerName(name);
+      setPickerOptions(options);
+      Animated.timing(slideY, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    };
 
-  const slideDown = () => {
-    Animated.timing(slideY, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+    const slideDown = () => {
+      Animated.timing(slideY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    };
 
-  function FocusAwareStatusBar(props) {
-    const isFocused = useIsFocused();
-    return isFocused ? <StatusBar {...props} /> : null;
-  }
+    function FocusAwareStatusBar(props) {
+      const isFocused = useIsFocused();
+      return isFocused ? <StatusBar {...props} /> : null;
+    }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['right', 'bottom', 'left']}>
-      <FocusAwareStatusBar barStyle='light-content' />
-      <Header route={route} navigation={navigation} />
-      {isLoadingProduct ? (
-        <Loader />
-      ) : (
-        <>
-          <ProductInfo product={product} />
-          {/* <ProductOptions
-        product={product}
-        productVariations={productVariations}
-        showOptions={showOptions}
-        optionLabel={'Size'}
-        selectedVariation={selectedVariation}
-      /> */}
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={['right', 'bottom', 'left']}
+      >
+        <FocusAwareStatusBar barStyle='light-content' />
+        <Header route={route} navigation={navigation} />
+        {shop.isLoading ? (
+          <Loader />
+        ) : (
+          <>
+            <ScrollView>
+              <View
+                style={{
+                  paddingBottom: 10,
+                }}
+              >
+                <ProductInfo product={product} />
+                {shop.availableOptions.map((item) => (
+                  <ProductOptions key={item.id} item={item} selectedOptions={selectedOptions} showOptions={showOptions} />
+                ))}
+                {/* <FlatList
+                  data={shop.availableOptions}
+                  keyExtractor={(item) => `${item.id}`}
+                  renderItem={({item}) => <ProductOptions item={item} selectedOptions={selectedOptions} />}
+                /> */}
 
-          <BreadOptions
-            product={product}
-            productOptions={sizeOptions}
-            showOptions={showOptions}
-            selectedOptions={selectedOptions}
-            optionLabel={'Choose Your Size'}
-            optionName={'Size'}
-          />
-          <BreadOptions
-            product={product}
-            productOptions={breadOptions}
-            showOptions={showOptions}
-            selectedOptions={selectedOptions}
-            optionLabel={'Choose Your Bread'}
-            optionName={'Bread'}
-          />
+                {/* <BreadOptions
+                  product={product}
+                  productOptions={breadOptions}
+                  showOptions={showOptions}
+                  selectedOptions={selectedOptions}
+                  optionLabel={'Choose Your Bread'}
+                  optionName={'Bread'}
+                /> */}
+              </View>
+            </ScrollView>
 
-          {/* Picker */}
-          {/* <SizePicker
-        product={product}
-        slideY={slideY}
-        slideDown={slideDown}
-        pickerValues={productVariations}
-        setSelectedOptions={setSelectedOptions}
-      /> */}
-          <OptionPicker
-            product={product}
-            slideY={slideY}
-            slideDown={slideDown}
-            pickerOption={pickerOption}
-            pickerValues={pickerValues}
-            selectedOptions={selectedOptions}
-            setSelectedOptions={setSelectedOptions}
-          />
-        </>
-      )}
-    </SafeAreaView>
-  );
-};
+            {/* Order Button */}
+            <View
+              style={{
+                paddingHorizontal: SIZES.padding * 2,
+                paddingVertical: SIZES.padding,
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: SIZES.width,
+                backgroundColor: 'white',
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  backgroundColor: COLORS.primary,
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  ...styles.shadow,
+                  borderRadius: SIZES.radius * 2,
+                }}
+                onPress={() => {
+                  shop.cart.addProduct(product, selectedOptions);
+                  navigation.navigate('Shop');
+                }}
+              >
+                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                  Add To Order
+                </Text>
+                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>$7.99</Text>
+              </TouchableOpacity>
+            </View>
+
+            <OptionPicker
+              product={product}
+              slideY={slideY}
+              slideDown={slideDown}
+              pickerName={pickerName}
+              pickerOptions={pickerOptions}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
+            />
+          </>
+        )}
+      </SafeAreaView>
+    );
+  })
+);
 
 const styles = StyleSheet.create({
   container: {

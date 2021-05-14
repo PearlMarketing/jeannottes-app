@@ -2,13 +2,16 @@ import React from 'react';
 import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
+import { observer, inject } from 'mobx-react';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
 import ShopNavigator from '../navigation/ShopNavigator';
+import CartNavigator from '../navigation/CartNavigator';
 
 const Tab = createBottomTabNavigator();
 
-const TabNavigator = () => {
+const TabNavigator = inject('shop')(
+  observer(({ shop }) => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -40,10 +43,10 @@ const TabNavigator = () => {
       }}
     >
       <Tab.Screen name='Order' component={ShopNavigator} />
-      <Tab.Screen name='Cart' component={ShopNavigator} />
+      <Tab.Screen name='Cart' component={CartNavigator} options={{tabBarBadge: shop.cart.entries.length || null}} />
       <Tab.Screen name='More' component={ShopNavigator} />
     </Tab.Navigator>
   );
-};
+}));
 
 export default TabNavigator;

@@ -1,3 +1,6 @@
+if(__DEV__) {
+  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'))
+}
 import React, { useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,10 +22,36 @@ import {
   Roboto_900Black_Italic,
 } from '@expo-google-fonts/roboto';
 
-import ProductModule from './src/store/product';
+import { Text } from 'react-native'
+
+import { Provider } from 'mobx-react';
+import { observable, reaction } from 'mobx';
+import {
+  onSnapshot,
+  onAction,
+  onPatch,
+  applySnapshot,
+  applyAction,
+  applyPatch,
+  getSnapshot,
+} from 'mobx-state-tree';
+
+// import ProductModule from './src/store/product';
 
 import TabNavigator from './src/navigation/TabNavigator';
 import ProductScreen from './src/screens/ProductScreen';
+import CartScreen from './src/screens/CartScreen';
+
+import { ShopStore } from './src/models/ShopStore';
+
+const fetcher = (url) => window.fetch(url).then((response) => response.json());
+const shop = ShopStore.create(
+  {},
+  {
+    fetch: fetcher,
+    alert: (m) => console.log(m), // Noop for demo: window.alert(m)
+  }
+);
 
 const Stack = createStackNavigator();
 
@@ -42,13 +71,6 @@ const App = () => {
     Roboto_900Black_Italic,
   });
 
-  useEffect(() => {
-    if (!ProductModule.initiateLoad) {
-      ProductModule.loadProducts('category=22');
-    }
-    return null
-  }, [ProductModule.initiateLoad]);
-
   if (!fontsLoaded) {
     return (
       <SafeAreaProvider>
@@ -57,19 +79,20 @@ const App = () => {
     );
   } else {
     return (
-      <SafeAreaProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerShown: false,
-            }}
-            initialRouteName={'Tabs'}
-          >
-            <Stack.Screen name='Tabs' component={TabNavigator} />
-            <Stack.Screen name='Product' component={ProductScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaProvider>
+      <Provider shop={shop}>
+        <SafeAreaProvider>
+          <NavigationContainer>
+            <Stack.Navigator
+              screenOptions={{
+                headerShown: false,
+              }}
+              initialRouteName={'Tabs'}
+            >
+              <Stack.Screen name='Tabs' component={TabNavigator} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </Provider>
     );
   }
 };

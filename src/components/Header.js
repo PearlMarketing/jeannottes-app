@@ -11,7 +11,7 @@ const Header = ({ route, navigation, page, dark }) => {
         flexDirection: 'row',
         position: 'absolute',
         zIndex: 10,
-        top: 40,
+        top: 50,
         left: 0,
       }}
     >
@@ -23,7 +23,7 @@ const Header = ({ route, navigation, page, dark }) => {
         }}
         onPress={() => navigation.goBack()}
       >
-        <Ionicons name='arrow-back' size={32} color={COLORS.white} />
+        <Ionicons name='arrow-back' size={32} color={dark ? COLORS.primary : COLORS.white} />
       </TouchableOpacity>
 
       {/* Restaurant Name Section */}

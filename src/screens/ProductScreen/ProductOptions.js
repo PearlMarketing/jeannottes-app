@@ -4,19 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { SIZES, COLORS, FONTS } from '../../constants';
 
-const ProductOptions = ({
-  product,
-  productVariations,
-  optionLabel,
-  optionName,
-  showOptions,
-  selectedVariation,
-}) => {
+const ProductOptions = ({ item, selectedOptions, showOptions }) => {
   return (
     <View
       style={{
         width: SIZES.width,
-        marginTop: 15,
+        marginVertical: 8,
         paddingHorizontal: SIZES.padding * 2,
       }}
     >
@@ -32,16 +25,15 @@ const ProductOptions = ({
           ...styles.shadow,
           borderRadius: SIZES.radius,
         }}
-        onPress={() => showOptions(optionName)}
+        onPress={() => showOptions(item.options, item.name)}
       >
-        {/* Size on left */}
         <View>
           <Text
             style={{
               ...FONTS.body4,
             }}
           >
-            {optionLabel}
+            {item.name}
           </Text>
           <Text
             style={{
@@ -49,26 +41,8 @@ const ProductOptions = ({
               color: COLORS.primary,
             }}
           >
-            {selectedVariation?.name}
+            {selectedOptions?.filter((e) => e.option === item.name)[0].value}
           </Text>
-        </View>
-        {/* Price on right */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
-          <Text
-            style={{
-              ...FONTS.body3,
-              marginRight: 10,
-            }}
-          >
-            ${selectedVariation?.price.toFixed(2)}
-          </Text>
-          {/* Add down arrow icon here */}
-          <Ionicons name='chevron-down' size={20} color={COLORS.secondary} />
         </View>
       </TouchableOpacity>
     </View>
