@@ -3,12 +3,16 @@ import { types, getParent, flow } from 'mobx-state-tree';
 
 import Service from '../services/services';
 
-import { replaceHTML } from '../services/helpers';
-
 export const Option = types.model('Option', {
   id: types.identifierNumber,
   name: types.string,
-  options: types.array(types.string),
+  options: types.array(
+    types.model({
+      name: types.string,
+      price: types.optional(types.number, 0),
+    })
+  ),
+  type: types.string,
   isAvailable: true,
 });
 
@@ -23,10 +27,7 @@ export const OptionStore = types
     },
     get availableOptions() {
       return values(self.options);
-    },
-    get sortedAvailableOptions() {
-      return sortOptions(values(self.options));
-    },
+    }
   }))
   .actions((self) => {
     function markLoading(loading) {
@@ -47,11 +48,30 @@ export const OptionStore = types
         const optionsData = response.data.filter((e) => e.id === 1773)[0]
           .tm_meta.tmfbuilder;
         let radioOptions = [];
+        // Radio Options
         for (i = 0; i < optionsData.radiobuttons_header_title.length; i++) {
           radioOptions.push({
-            id: i,
+            id: radioOptions.length,
             name: optionsData.radiobuttons_header_title[i],
-            options: optionsData.multiple_radiobuttons_options_title[i],
+            options: optionsData.multiple_radiobuttons_options_title[i].map(
+              (e, i) => ({
+                name: e,
+              })
+            ),
+            type: 'radio',
+          });
+        }
+        // Checkbox Options
+        for (i = 0; i < optionsData.checkboxes_internal_name.length; i++) {
+          radioOptions.push({
+            id: radioOptions.length,
+            name: optionsData.checkboxes_internal_name[i],
+            options: optionsData.multiple_checkboxes_options_value[i].map(
+              (e, i) => ({
+                name: e,
+              })
+            ),
+            type: 'checkbox',
           });
         }
 
@@ -73,9 +93,3 @@ export const OptionStore = types
       loadOptions,
     };
   });
-
-function sortOptions(options) {
-  return options
-    .filter((b) => b.isAvailable)
-    .sort((a, b) => (a.name > b.name ? 1 : a.name === b.name ? 0 : -1));
-}

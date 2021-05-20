@@ -7,12 +7,16 @@ import {
   Image,
   FlatList,
   StatusBar,
+  Animated,
 } from 'react-native';
 import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { isIphoneX } from 'react-native-iphone-x-helper';
+import { RectButton } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+
 import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 
@@ -20,23 +24,46 @@ import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 
 const CartScreen = inject('shop')(
-  observer(({ shop: { cart }, route, navigation }) => {
+  observer(({ shop, route, navigation }) => {
     function FocusAwareStatusBar(props) {
       const isFocused = useIsFocused();
       return isFocused ? <StatusBar {...props} /> : null;
     }
 
+    const renderRightActions = (progress, dragX) => {
+      const trans = dragX.interpolate({
+        inputRange: [-100, 0],
+        outputRange: [0.5, 0],
+        // extrapolate: 'clamp'
+      });
+      return (
+        <TouchableOpacity
+          style={{
+            // width: 80,
+            backgroundColor: '#D11A2A',
+            justifyContent: 'center',
+          }}
+          onPress={() => {}}
+        >
+          <Animated.Text
+            style={[
+              styles.actionText,
+              {
+                // transform: [{ translateX: 100 }],
+              },
+            ]}
+          >
+            Delete
+          </Animated.Text>
+        </TouchableOpacity>
+      );
+    };
+
     const LineItem = ({ item }) => (
-      <TouchableOpacity
-        style={{
-          width: SIZES.width,
-        }}
-        onPress={() =>
-          navigation.navigate('Product', {
-            params: { item:item.product }
-            // item:item.product,
-          })
-        }
+      <Swipeable
+        renderRightActions={renderRightActions}
+        containerStyle={{ backgroundColor: COLORS.white }}
+        overshootRight='false'
       >
         <View
           style={{
@@ -48,16 +75,25 @@ const CartScreen = inject('shop')(
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottomWidth: 1,
           }}
         >
           <View>
             <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
             <Text style={{ ...FONTS.body3 }}>Options</Text>
           </View>
-          <Text style={{ ...FONTS.h4 }}>${item.price}</Text>
+          <Text style={{ ...FONTS.h4 }}>${item.price.toFixed(2)}</Text>
         </View>
-      </TouchableOpacity>
+      </Swipeable>
+    );
+
+    const RenderSeparator = () => (
+      <View
+        style={{
+          height: 1,
+          width: '100%',
+          backgroundColor: '#CED0CE',
+        }}
+      />
     );
 
     const LineTotal = ({ text, total }) => (
@@ -76,7 +112,6 @@ const CartScreen = inject('shop')(
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            borderBottomWidth: 1,
           }}
         >
           <Text style={{ ...FONTS.h4 }}>
@@ -116,14 +151,48 @@ const CartScreen = inject('shop')(
           </View>
 
           {/* Line Items */}
-          {cart.entries.map((entry) => (
-            <LineItem key={entry.id} item={{ product: entry.product, name: entry.product.name, price: '7.99' }} />
-          ))}
+          <FlatList
+            // style={{
+            //   flexGrow: 0,
+            // }}
+            data={shop.cart.entries}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <LineItem
+                key={item.id}
+                item={{
+                  product: item,
+                  name: item.name,
+                  price: item.subTotal,
+                }}
+              />
+            )}
+            ItemSeparatorComponent={RenderSeparator}
+            ListFooterComponent={
+              <>
+                <RenderSeparator />
+                <LineTotal text='Subtotal' total={shop.cart.total.toFixed(2)} />
+                <RenderSeparator />
+              </>
+            }
+          />
+          {/* {shop.cart.entries.map((entry) => (
+            <Swipeable renderLeftActions={renderLeftActions}>
+              <LineItem
+                key={entry.id}
+                item={{
+                  product: entry,
+                  name: entry.name,
+                  price: entry.subTotal,
+                }}
+              />
+            </Swipeable>
+          ))} */}
 
           {/* Totals */}
-          <View>
-            <LineTotal text='Subtotal' total='23.97' />
-          </View>
+          {/* <View>
+            <LineTotal text='Subtotal' total={shop.cart.total.toFixed(2)} />
+          </View> */}
 
           {/* Order Button */}
           <View
@@ -200,6 +269,13 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   select: {},
+  actionText: {
+    color: 'white',
+    fontSize: 16,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+    alignSelf: 'flex-end',
+  },
 });
 
 export default CartScreen;

@@ -8,7 +8,7 @@ import {
   Animated,
   StatusBar,
   ScrollView,
-  FlatList
+  FlatList,
 } from 'react-native';
 import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
@@ -19,16 +19,14 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
-import Service from '../../services/services';
+// import Service from '../../services/services';
 
 import ProductInfo from './ProductInfo';
-import BreadOptions from './BreadOptions';
-import ProductOptions from './ProductOptions'
+import ProductOptions from './ProductOptions';
 import OptionPicker from './OptionPicker';
 
 const ProductScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
-    // const [productId, setProductId] = React.useState(null)
     const [product, setProduct] = React.useState(null);
 
     // Selected product options
@@ -36,7 +34,6 @@ const ProductScreen = inject('shop')(
       {
         option: 'Size',
         value: 'Small',
-        price: 0,
       },
       {
         option: 'Choose Your Bread',
@@ -56,56 +53,23 @@ const ProductScreen = inject('shop')(
     React.useEffect(() => {
       // passes down selected item
       let { item } = route.params;
+
+      // check if variations are loaded
+      if (shop.productStore.products.get(item.id).type === 'variable') {
+        if (shop.productStore.products.get(item.id).loadedVariations) {
+          console.log('variations already loaded');
+        } else {
+          shop.variationStore.loadVariations(item);
+        }
+      }
+
+      // check if selection exist
+      if (!shop.selectionStore.selections?.get(item.id)) {
+        // if not, create new selection for product
+        shop.selectionStore.addSelection(item);
+      }
+
       setProduct(item);
-      shop.variationStore.loadVariations(item)
-
-    //   // loads product sizes
-    //   setIsLoadingProduct(true);
-    //   Service.ProductVariations(item.id)
-    //     .then((res) => {
-    //       let sizeList = [];
-    //       res.data.map((variation) => {
-    //         sizeList.push({
-    //           id: variation.id,
-    //           name: variation.attributes[0].option,
-    //           price: parseFloat(variation.price),
-    //         });
-    //       });
-    //       setSizeOptions(sizeList);
-
-    //       const optionIndex = selectedOptions.findIndex(
-    //         (e) => e.option === 'Size'
-    //       );
-    //       let updatedOption = [...selectedOptions];
-    //       updatedOption[optionIndex] = {
-    //         ...updatedOption[optionIndex],
-    //         ...sizeList[0],
-    //       };
-    //       setSelectedOptions(updatedOption);
-    //     })
-    //     .finally(() => {
-    //       setIsLoadingProduct(false);
-    //     });
-
-    //   // loads EPO
-    //   Service.ProductEPO()
-    //     .then((res) => {
-    //       const standardEPO = res.data.filter((e) => e.id === 1773)[0].tm_meta
-    //         .tmfbuilder;
-    //       let breadList = [];
-    //       standardEPO.multiple_radiobuttons_options_title[0].map((option) => {
-    //         breadList.push({ name: option });
-    //       });
-    //       setBreadOptions(breadList);
-    //       let cheeseList = [];
-    //       standardEPO.multiple_radiobuttons_options_title[1].map((option) => {
-    //         cheeseList.push({ name: option });
-    //       });
-    //       setCheeseOptions(cheeseList);
-    //     })
-    //     .finally(() => {
-    //       // console.log(selectedOptions);
-    //     });
     }, []);
 
     const showOptions = (options, name) => {
@@ -138,7 +102,9 @@ const ProductScreen = inject('shop')(
       >
         <FocusAwareStatusBar barStyle='light-content' />
         <Header route={route} navigation={navigation} />
-        {shop.isLoading ? (
+        {!product?.id ? (
+          <Loader />
+        ) : !shop.productStore.products.get(product.id).loadedVariations ? (
           <Loader />
         ) : (
           <>
@@ -149,8 +115,27 @@ const ProductScreen = inject('shop')(
                 }}
               >
                 <ProductInfo product={product} />
+                <ProductOptions
+                  item={
+                    shop.availableVariations.filter(
+                      (e) => e.id === product.id
+                    )[0]
+                  }
+                  product={product}
+                  selectedOptions={selectedOptions}
+                  setSelectedOptions={setSelectedOptions}
+                  showOptions={showOptions}
+                />
                 {shop.availableOptions.map((item) => (
-                  <ProductOptions key={item.id} item={item} selectedOptions={selectedOptions} showOptions={showOptions} />
+                  <ProductOptions
+                    key={item.id}
+                    item={item}
+                    product={product}
+                    selectedOptions={selectedOptions}
+                    setSelectedOptions={setSelectedOptions}
+                    showOptions={showOptions}
+                    navigation={navigation}
+                  />
                 ))}
                 {/* <FlatList
                   data={shop.availableOptions}
@@ -193,14 +178,24 @@ const ProductScreen = inject('shop')(
                   borderRadius: SIZES.radius * 2,
                 }}
                 onPress={() => {
-                  shop.cart.addProduct(product, selectedOptions);
+                  shop.cart.addProduct(shop.selectionStore.selections?.get(product.id));
+                  shop.selectionStore.clearSelections(product);
                   navigation.navigate('Shop');
                 }}
               >
                 <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
                   Add To Order
                 </Text>
-                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>$7.99</Text>
+                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                  $
+                  {(shop.selectionStore.selections
+                    ?.get(product.id)
+                    .subTotal.toFixed(2) > 0 &&
+                    shop.selectionStore.selections
+                      ?.get(product.id)
+                      .subTotal.toFixed(2)) ||
+                    '---'}
+                </Text>
               </TouchableOpacity>
             </View>
 

@@ -4,17 +4,21 @@ import { OptionStore } from './OptionStore';
 import { VariationStore } from './VariationStore';
 import { CartStore } from './CartStore';
 import { ViewStore } from './ViewStore';
+import { SelectionStore } from './SelectionStore';
 
 export const ShopStore = types
   .model('ShopStore', {
     productStore: types.optional(ProductStore, {
       products: {},
     }),
+    selectionStore: types.optional(SelectionStore, {
+      selections: {},
+    }),
     optionStore: types.optional(OptionStore, {
       options: {},
     }),
     variationStore: types.optional(VariationStore, {
-      options: {},
+      variations: {},
     }),
     cart: types.optional(CartStore, {
       entries: [],
@@ -31,6 +35,9 @@ export const ShopStore = types
     get isLoading() {
       return self.productStore.isLoading;
     },
+    get isLoadingVariation() {
+      return self.variationStore.isLoading;
+    },
     get products() {
       return self.productStore.products;
     },
@@ -39,6 +46,12 @@ export const ShopStore = types
     },
     get sortedAvailableProducts() {
       return self.productStore.sortedAvailableProducts;
+    },
+    get selections() {
+      return self.selectionStore.selections;
+    },
+    get availableSelections() {
+      return self.selectionStore.availableSelections;
     },
     get options() {
       return self.optionStore.options;

@@ -26,6 +26,7 @@ export const Product = types.model('Product', {
   ),
   variations: types.array(types.number),
   isAvailable: true,
+  loadedVariations: false,
 });
 
 export const ProductStore = types
@@ -47,6 +48,10 @@ export const ProductStore = types
   .actions((self) => {
     function markLoading(loading) {
       self.isLoading = loading;
+    }
+
+    function markLoadedVariation(productId, result) {
+      self.products.get(productId).loadedVariations = result;
     }
 
     function updateProducts(response) {
@@ -80,6 +85,7 @@ export const ProductStore = types
     return {
       updateProducts,
       loadProducts,
+      markLoadedVariation,
     };
   });
 
