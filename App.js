@@ -1,10 +1,11 @@
-if(__DEV__) {
-  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'))
+if (__DEV__) {
+  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
 }
 import React, { useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RootSiblingParent } from 'react-native-root-siblings';
 import AppLoading from 'expo-app-loading';
 import {
   useFonts,
@@ -22,7 +23,7 @@ import {
   Roboto_900Black_Italic,
 } from '@expo-google-fonts/roboto';
 
-import { Text } from 'react-native'
+import { Text } from 'react-native';
 
 import { Provider } from 'mobx-react';
 import { observable, reaction } from 'mobx';
@@ -79,20 +80,22 @@ const App = () => {
     );
   } else {
     return (
-      <Provider shop={shop}>
-        <SafeAreaProvider>
-          <NavigationContainer>
-            <Stack.Navigator
-              screenOptions={{
-                headerShown: false,
-              }}
-              initialRouteName={'Tabs'}
-            >
-              <Stack.Screen name='Tabs' component={TabNavigator} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </SafeAreaProvider>
-      </Provider>
+      <RootSiblingParent>
+        <Provider shop={shop}>
+          <SafeAreaProvider>
+            <NavigationContainer>
+              <Stack.Navigator
+                screenOptions={{
+                  headerShown: false,
+                }}
+                initialRouteName={'Tabs'}
+              >
+                <Stack.Screen name='Tabs' component={TabNavigator} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </Provider>
+      </RootSiblingParent>
     );
   }
 };

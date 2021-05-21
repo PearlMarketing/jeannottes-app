@@ -13,6 +13,8 @@ import {
 import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ShopToast from '../../components/ShopToast'
+// import Toast from 'react-native-root-toast'
 // import { Ionicons } from '@expo/vector-icons';
 // import { isIphoneX } from 'react-native-iphone-x-helper';
 import Header from '../../components/Header';
@@ -180,6 +182,7 @@ const ProductScreen = inject('shop')(
                 onPress={() => {
                   shop.cart.addProduct(shop.selectionStore.selections?.get(product.id));
                   shop.selectionStore.clearSelections(product);
+                  ShopToast(product.name + ' added to cart!')
                   navigation.navigate('Shop');
                 }}
               >

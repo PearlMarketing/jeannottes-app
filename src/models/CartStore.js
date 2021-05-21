@@ -105,7 +105,7 @@ export const CartStore = types
       // }
       // entry.increaseQuantity(quantity)
       if (notify) self.shop.alert('Added to cart');
-      if (notify) self.shop.alert(self.entries);
+      // if (notify) self.shop.alert(self.entries);
     },
     remove(product) {
       destroy(product);
