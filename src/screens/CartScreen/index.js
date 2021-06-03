@@ -30,12 +30,7 @@ const CartScreen = inject('shop')(
       return isFocused ? <StatusBar {...props} /> : null;
     }
 
-    const renderRightActions = (progress, dragX) => {
-      const trans = dragX.interpolate({
-        inputRange: [-100, 0],
-        outputRange: [0.5, 0],
-        // extrapolate: 'clamp'
-      });
+    const renderRightActions = (item) => {
       return (
         <TouchableOpacity
           style={{
@@ -43,27 +38,21 @@ const CartScreen = inject('shop')(
             backgroundColor: '#D11A2A',
             justifyContent: 'center',
           }}
-          onPress={() => {}}
+          onPress={() => {
+            shop.cart.remove(item);
+          }}
         >
-          <Animated.Text
-            style={[
-              styles.actionText,
-              {
-                // transform: [{ translateX: 100 }],
-              },
-            ]}
-          >
-            Delete
-          </Animated.Text>
+          <Animated.Text style={[styles.actionText]}>Delete</Animated.Text>
         </TouchableOpacity>
       );
     };
 
     const LineItem = ({ item }) => (
       <Swipeable
-        renderRightActions={renderRightActions}
+        renderRightActions={() => renderRightActions(item)}
         containerStyle={{ backgroundColor: COLORS.white }}
         overshootRight='false'
+        containerStyle={{}}
       >
         <View
           style={{
@@ -79,9 +68,29 @@ const CartScreen = inject('shop')(
         >
           <View>
             <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
-            <Text style={{ ...FONTS.body3 }}>Options</Text>
+            <View>
+              {item.options.map((option, i) => (
+                <Text key={i}>
+                  {option.name}:{' '}
+                  {Array.isArray(option.value)
+                    ? option.value.join(', ')
+                    : option.value}
+                </Text>
+              ))}
+            </View>
           </View>
-          <Text style={{ ...FONTS.h4 }}>${item.price.toFixed(2)}</Text>
+          <View>
+            <Text
+              style={{
+                ...FONTS.h4,
+                flexGrow: 0,
+                flexShrink: 0,
+                flexBasis: 'auto',
+              }}
+            >
+              ${item.subTotal.toFixed(2)}
+            </Text>
+          </View>
         </View>
       </Swipeable>
     );
@@ -127,46 +136,19 @@ const CartScreen = inject('shop')(
         edges={['top', 'right', 'bottom', 'left']}
       >
         <FocusAwareStatusBar barStyle='dark-content' />
-        <Header route={route} navigation={navigation} dark />
+        <Header route={route} navigation={navigation} dark title='Cart' />
         {/* {isLoadingProduct ? (
         <Loader />
       ) : ( */}
         <>
-          <View
-            style={{
-              // paddingTop: SIZES.padding,
-              paddingBottom: SIZES.padding,
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                marginVertical: 10,
-                ...FONTS.h2,
-                color: COLORS.primary,
-              }}
-            >
-              Cart
-            </Text>
-          </View>
-
           {/* Line Items */}
           <FlatList
             // style={{
             //   flexGrow: 0,
             // }}
             data={shop.cart.entries}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <LineItem
-                key={item.id}
-                item={{
-                  product: item,
-                  name: item.name,
-                  price: item.subTotal,
-                }}
-              />
-            )}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => <LineItem key={item.id} item={item} />}
             ItemSeparatorComponent={RenderSeparator}
             ListFooterComponent={
               <>
@@ -176,35 +158,16 @@ const CartScreen = inject('shop')(
               </>
             }
           />
-          {/* {shop.cart.entries.map((entry) => (
-            <Swipeable renderLeftActions={renderLeftActions}>
-              <LineItem
-                key={entry.id}
-                item={{
-                  product: entry,
-                  name: entry.name,
-                  price: entry.subTotal,
-                }}
-              />
-            </Swipeable>
-          ))} */}
-
-          {/* Totals */}
-          {/* <View>
-            <LineTotal text='Subtotal' total={shop.cart.total.toFixed(2)} />
-          </View> */}
 
           {/* Order Button */}
           <View
             style={{
-              padding: SIZES.padding * 2,
+              paddingHorizontal: SIZES.padding * 2,
+              paddingVertical: SIZES.padding,
               alignItems: 'center',
               justifyContent: 'center',
-              position: 'absolute',
               width: SIZES.width,
-              bottom: 0,
-              paddingBottom: isIphoneX ? 30 : 0,
-              // backgroundColor: 'white',
+              backgroundColor: 'white',
             }}
           >
             <TouchableOpacity
@@ -219,12 +182,13 @@ const CartScreen = inject('shop')(
                 ...styles.shadow,
                 borderRadius: SIZES.radius * 2,
               }}
-              onPress={() =>
+              onPress={() => {
+                // TODO: only allow if there are items in cart
                 navigation.navigate('Checkout', {
                   // product: product,
                   // selectedOptions: selectedOptions,
-                })
-              }
+                });
+              }}
             >
               <Text
                 style={{
@@ -256,7 +220,7 @@ const CartScreen = inject('shop')(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.lightGray2,
+    backgroundColor: COLORS.white,
   },
   shadow: {
     shadowColor: '#000',

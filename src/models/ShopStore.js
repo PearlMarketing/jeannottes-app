@@ -5,6 +5,7 @@ import { VariationStore } from './VariationStore';
 import { CartStore } from './CartStore';
 import { ViewStore } from './ViewStore';
 import { SelectionStore } from './SelectionStore';
+import { UserStore } from './UserStore';
 
 export const ShopStore = types
   .model('ShopStore', {
@@ -22,6 +23,9 @@ export const ShopStore = types
     }),
     cart: types.optional(CartStore, {
       entries: [],
+    }),
+    userStore: types.optional(UserStore, {
+      user: {}
     }),
     view: types.optional(ViewStore, {}),
   })
@@ -64,6 +68,9 @@ export const ShopStore = types
     },
     get availableVariations() {
       return self.variationStore.availableVariations;
+    },
+    get user() {
+      return self.userStore.user;
     },
   }))
   .actions((self) => ({

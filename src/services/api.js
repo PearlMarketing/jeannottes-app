@@ -4,10 +4,15 @@ import hmacSHA1 from 'crypto-js/hmac-sha1';
 import Base64 from 'crypto-js/enc-base64';
 
 export const config = {
-    WC_BASE_URL: 'https://jeannottesmarket.pearlclients.com',
+    WC_BASE_URL: 'https://jmapp.pearlclients.com',
     WC_API_URL: '/wp-json/wc/v3',
     WC_CONSUMER_KEY: 'ck_c02bbd3328b6785565937ed8f62591836740fe53',
     WC_CONSUMER_SECRET: 'cs_7d8ae839dad169ef3d781bb9d4bcf2b016f04301'
+
+    // WC_BASE_URL: 'https://www.jeannottesmarket.com',
+    // WC_API_URL: '/wp-json/wc/v3',
+    // WC_CONSUMER_KEY: 'ck_b61003fa03d3a51ce289b392452abc29425432c1',
+    // WC_CONSUMER_SECRET: 'cs_adf6ceb71da4d952742ca312a4864ec36a75d681'
 };
 
 const _getOAuth = () => new OAuth({

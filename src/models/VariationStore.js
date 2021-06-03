@@ -12,7 +12,7 @@ export const Variation = types.model('Variation', {
       id: types.number,
       name: types.string,
       price: types.number,
-      barcode: types.string,
+      // barcode: types.string,
     })
   ),
   type: 'size',
@@ -52,7 +52,7 @@ export const VariationStore = types
             id: variation.id,
             name: variation.attributes[0].option,
             price: parseFloat(variation.price),
-            barcode: variation.meta_data[0].value,
+            // barcode: variation.meta_data[0].value,
           })),
         };
         updateVariations(variationsData);

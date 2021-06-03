@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,21 @@ import {
   StatusBar,
   ScrollView,
   FlatList,
+  Button,
+  Platform,
 } from 'react-native';
+import { Input } from 'react-native-elements';
 import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ShopToast from '../../components/ShopToast'
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import ShopToast from '../../components/ShopToast';
 // import Toast from 'react-native-root-toast'
 // import { Ionicons } from '@expo/vector-icons';
 // import { isIphoneX } from 'react-native-iphone-x-helper';
 import Header from '../../components/Header';
 import Loader from '../../components/Loader';
+import StyledTextInput from '../../components/TextInput';
 
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 // import Service from '../../services/services';
@@ -31,26 +36,25 @@ const ProductScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
     const [product, setProduct] = React.useState(null);
 
-    // Selected product options
-    const [selectedOptions, setSelectedOptions] = React.useState([
-      {
-        option: 'Size',
-        value: 'Small',
-      },
-      {
-        option: 'Choose Your Bread',
-        value: 'White Roll',
-      },
-      {
-        option: 'Choose Your Cheese',
-        value: 'American',
-      },
-    ]);
-
     // show an array of options to populate picker
     const [pickerName, setPickerName] = React.useState(null);
     const [pickerOptions, setPickerOptions] = React.useState([]);
     const slideY = React.useRef(new Animated.Value(0)).current;
+
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+    const showDatePicker = () => {
+      setDatePickerVisibility(true);
+    };
+
+    const hideDatePicker = () => {
+      setDatePickerVisibility(false);
+    };
+
+    const handleConfirm = (date) => {
+      console.warn('A date has been picked: ', date);
+      hideDatePicker();
+    };
 
     React.useEffect(() => {
       // passes down selected item
@@ -103,7 +107,7 @@ const ProductScreen = inject('shop')(
         edges={['right', 'bottom', 'left']}
       >
         <FocusAwareStatusBar barStyle='light-content' />
-        <Header route={route} navigation={navigation} />
+        <Header route={route} navigation={navigation} transparent />
         {!product?.id ? (
           <Loader />
         ) : !shop.productStore.products.get(product.id).loadedVariations ? (
@@ -124,8 +128,8 @@ const ProductScreen = inject('shop')(
                     )[0]
                   }
                   product={product}
-                  selectedOptions={selectedOptions}
-                  setSelectedOptions={setSelectedOptions}
+                  // selectedOptions={selectedOptions}
+                  // setSelectedOptions={setSelectedOptions}
                   showOptions={showOptions}
                 />
                 {shop.availableOptions.map((item) => (
@@ -133,26 +137,30 @@ const ProductScreen = inject('shop')(
                     key={item.id}
                     item={item}
                     product={product}
-                    selectedOptions={selectedOptions}
-                    setSelectedOptions={setSelectedOptions}
+                    // selectedOptions={selectedOptions}
+                    // setSelectedOptions={setSelectedOptions}
                     showOptions={showOptions}
                     navigation={navigation}
                   />
                 ))}
-                {/* <FlatList
-                  data={shop.availableOptions}
-                  keyExtractor={(item) => `${item.id}`}
-                  renderItem={({item}) => <ProductOptions item={item} selectedOptions={selectedOptions} />}
-                /> */}
 
-                {/* <BreadOptions
-                  product={product}
-                  productOptions={breadOptions}
-                  showOptions={showOptions}
-                  selectedOptions={selectedOptions}
-                  optionLabel={'Choose Your Bread'}
-                  optionName={'Bread'}
-                /> */}
+                {/* Time Picker */}
+                <Button title='Show Date Picker' onPress={showDatePicker} />
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible}
+                  mode='date'
+                  onConfirm={handleConfirm}
+                  onCancel={hideDatePicker}
+                />
+
+                <View
+                  style={{
+                    width: SIZES.width,
+                    paddingHorizontal: SIZES.padding * 2,
+                  }}
+                >
+                  <StyledTextInput label='Special Instructions' />
+                </View>
               </View>
             </ScrollView>
 
@@ -180,10 +188,20 @@ const ProductScreen = inject('shop')(
                   borderRadius: SIZES.radius * 2,
                 }}
                 onPress={() => {
-                  shop.cart.addProduct(shop.selectionStore.selections?.get(product.id));
-                  shop.selectionStore.clearSelections(product);
-                  ShopToast(product.name + ' added to cart!')
-                  navigation.navigate('Shop');
+                  if (
+                    shop.selectionStore.selections
+                      .get(product.id)
+                      .options.filter((e) => e.name === 'Size').length
+                  ) {
+                    shop.cart.addProduct(
+                      shop.selectionStore.selections.get(product.id)
+                    );
+                    shop.selectionStore.clearSelections(product);
+                    ShopToast(product.name + ' added to cart!', navigation);
+                    navigation.navigate('Shop');
+                  } else {
+                    ShopToast('Please select Size');
+                  }
                 }}
               >
                 <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
@@ -208,8 +226,8 @@ const ProductScreen = inject('shop')(
               slideDown={slideDown}
               pickerName={pickerName}
               pickerOptions={pickerOptions}
-              selectedOptions={selectedOptions}
-              setSelectedOptions={setSelectedOptions}
+              // selectedOptions={selectedOptions}
+              // setSelectedOptions={setSelectedOptions}
             />
           </>
         )}

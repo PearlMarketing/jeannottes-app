@@ -23,12 +23,12 @@ const ProductList = inject('shop')(
           width: SIZES.width * 0.5,
           paddingHorizontal: SIZES.padding * 0.5,
         }}
-        onPress={() =>
+        onPress={() => {
           navigation.navigate('Product', {
             item,
-            itemId: item.id
-          })
-        }
+            itemId: item.id,
+          });
+        }}
       >
         {/* Image */}
         <View

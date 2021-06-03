@@ -23,8 +23,8 @@ import Checkbox from './Checkbox';
 
 const SelectOptionsScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
-    const product = route.params.product
-    const option = route.params.item
+    const product = route.params.product;
+    const option = route.params.item;
 
     function FocusAwareStatusBar(props) {
       const isFocused = useIsFocused();
@@ -37,12 +37,17 @@ const SelectOptionsScreen = inject('shop')(
         edges={['top', 'right', 'bottom', 'left']}
       >
         <FocusAwareStatusBar barStyle='dark-content' />
-        <Header route={route} navigation={navigation} dark />
+        <Header
+          route={route}
+          navigation={navigation}
+          dark
+          title={`Select ` + option.name}
+        />
         {/* {isLoadingProduct ? (
         <Loader />
       ) : ( */}
         <>
-          <View
+          {/* <View
             style={{
               // paddingTop: SIZES.padding,
               paddingBottom: SIZES.padding,
@@ -58,7 +63,7 @@ const SelectOptionsScreen = inject('shop')(
             >
               Select {option.name}
             </Text>
-          </View>
+          </View> */}
 
           <ScrollView>
             <View
@@ -66,8 +71,8 @@ const SelectOptionsScreen = inject('shop')(
                 paddingBottom: 10,
               }}
             >
-              {option.options.map((item) => (
-                <Checkbox product={product} option={option} item={item} />
+              {option.options.map((item, i) => (
+                <Checkbox key={i} product={product} option={option} item={item} />
               ))}
             </View>
           </ScrollView>
@@ -96,12 +101,12 @@ const SelectOptionsScreen = inject('shop')(
                 ...styles.shadow,
                 borderRadius: SIZES.radius * 2,
               }}
-              onPress={() =>
+              onPress={() => {
                 navigation.navigate('Product', {
                   // product: product,
                   // selectedOptions: selectedOptions,
-                })
-              }
+                });
+              }}
             >
               <Ionicons
                 name='arrow-back'

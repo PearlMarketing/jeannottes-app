@@ -11,8 +11,8 @@ const ProductOptions = inject('shop')(
       shop,
       item,
       product,
-      selectedOptions,
-      setSelectedOptions,
+      // selectedOptions,
+      // setSelectedOptions,
       showOptions,
       navigation,
     }) => {
@@ -54,9 +54,10 @@ const ProductOptions = inject('shop')(
                 navigation.navigate('SelectOptions', {
                   item,
                   product,
-                  selectedOptions,
-                  setSelectedOptions,
+                  // selectedOptions,
+                  // setSelectedOptions,
                 });
+                
               }
             }}
           >

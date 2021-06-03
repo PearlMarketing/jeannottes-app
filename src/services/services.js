@@ -2,7 +2,8 @@ import api from './api'
 import api_v2 from './api_v2'
 import axios from 'axios'
 
-axios.defaults.baseURL = 'https://jeannottesmarket.pearlclients.com'
+axios.defaults.baseURL = 'https://jmapp.pearlclients.com'
+// axios.defaults.baseURL = 'https://www.jeannottesmarket.com'
 
 class Service {
     // API

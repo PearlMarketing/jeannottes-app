@@ -38,32 +38,25 @@ const ConfirmationScreen = ({ route, navigation }) => {
       edges={['top', 'right', 'bottom', 'left']}
     >
       <FocusAwareStatusBar barStyle='dark-content' />
-      <Header route={route} navigation={navigation} dark />
+      <Header
+        route={route}
+        navigation={navigation}
+        dark
+        title='Order Confirmation'
+      />
       {/* {isLoadingProduct ? (
         <Loader />
       ) : ( */}
       <>
         <View
           style={{
-            // paddingTop: SIZES.padding,
-            paddingBottom: SIZES.padding,
-            alignItems: 'center',
+            paddingHorizontal: SIZES.padding * 2,
           }}
         >
-          <Text
-            style={{
-              marginVertical: 10,
-              ...FONTS.h2,
-              color: COLORS.primary,
-            }}
-          >
-            Confirmation
+          <Text>
+            Your order has been submitted. Here are the details of your order.
           </Text>
         </View>
-
-        <Text>
-          Your order has been submitted. Here are the details of your order.
-        </Text>
       </>
       {/* )} */}
     </SafeAreaView>

@@ -11,6 +11,7 @@ export const Selection = types
     type: types.string,
     options: types.array(
       types.model({
+        id: types.maybe(types.number),
         name: types.string,
         value: types.union(types.string, types.array(types.string)),
         price: types.optional(types.number, 0),

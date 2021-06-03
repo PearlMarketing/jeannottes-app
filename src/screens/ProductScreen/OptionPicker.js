@@ -15,8 +15,8 @@ const OptionPicker = inject('shop')(
       slideDown,
       pickerOptions,
       pickerName,
-      selectedOptions,
-      setSelectedOptions,
+      // selectedOptions,
+      // setSelectedOptions,
     }) => {
       const [viewHeight, setViewHeight] = React.useState(0);
 
@@ -59,6 +59,7 @@ const OptionPicker = inject('shop')(
                   name: pickerName,
                   value: option.name,
                   price: option.price,
+                  id: option.id || 0
                 })
                 // const optionIndex = selectedOptions.findIndex(
                 //   (e) => e.option === pickerName

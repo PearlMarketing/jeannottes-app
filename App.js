@@ -80,9 +80,9 @@ const App = () => {
     );
   } else {
     return (
-      <RootSiblingParent>
-        <Provider shop={shop}>
-          <SafeAreaProvider>
+      <Provider shop={shop}>
+        <SafeAreaProvider>
+          <RootSiblingParent>
             <NavigationContainer>
               <Stack.Navigator
                 screenOptions={{
@@ -93,9 +93,9 @@ const App = () => {
                 <Stack.Screen name='Tabs' component={TabNavigator} />
               </Stack.Navigator>
             </NavigationContainer>
-          </SafeAreaProvider>
-        </Provider>
-      </RootSiblingParent>
+          </RootSiblingParent>
+        </SafeAreaProvider>
+      </Provider>
     );
   }
 };

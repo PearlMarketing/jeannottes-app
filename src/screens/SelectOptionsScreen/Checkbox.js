@@ -32,10 +32,8 @@ const Checkbox = inject('shop')(
                 .options.filter((e) => e.name === option.name)[0]
                 ?.value.includes(item.name)
             ) {
-              console.log('removing');
               shop.selectionStore.removeOptionItem(product, option, item)
             } else {
-              console.log('adding');
               shop.selectionStore.addOptionItem(product, option, item)
             }
             // Toggle checkbox
