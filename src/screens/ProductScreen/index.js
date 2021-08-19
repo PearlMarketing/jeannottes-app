@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   View,
+  // KeyboardAvoidingView,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -13,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { Input } from 'react-native-elements';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,6 +33,7 @@ import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import ProductInfo from './ProductInfo';
 import ProductOptions from './ProductOptions';
 import OptionPicker from './OptionPicker';
+import TimePicker from './TimePicker';
 
 const ProductScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -42,6 +45,7 @@ const ProductScreen = inject('shop')(
     const slideY = React.useRef(new Animated.Value(0)).current;
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [specialInstructions, setSpecialInstructions] = useState('');
 
     const showDatePicker = () => {
       setDatePickerVisibility(true);
@@ -52,7 +56,16 @@ const ProductScreen = inject('shop')(
     };
 
     const handleConfirm = (date) => {
-      console.warn('A date has been picked: ', date);
+      // console.warn('A date has been picked: ', date);
+      shop.selectionStore.addOption(product, {
+        name: 'Pickup Time',
+        value: date.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
+        // price: 0,
+        // id: 0
+      });
       hideDatePicker();
     };
 
@@ -104,7 +117,7 @@ const ProductScreen = inject('shop')(
     return (
       <SafeAreaView
         style={styles.container}
-        edges={['right', 'bottom', 'left']}
+        edges={['right', 'left']}
       >
         <FocusAwareStatusBar barStyle='light-content' />
         <Header route={route} navigation={navigation} transparent />
@@ -114,7 +127,7 @@ const ProductScreen = inject('shop')(
           <Loader />
         ) : (
           <>
-            <ScrollView>
+            <KeyboardAwareScrollView>
               <View
                 style={{
                   paddingBottom: 10,
@@ -145,10 +158,14 @@ const ProductScreen = inject('shop')(
                 ))}
 
                 {/* Time Picker */}
-                <Button title='Show Date Picker' onPress={showDatePicker} />
+                <TimePicker
+                  product={product}
+                  title='Pickup Time (Optional)'
+                  onPress={showDatePicker}
+                />
                 <DateTimePickerModal
                   isVisible={isDatePickerVisible}
-                  mode='date'
+                  mode='time'
                   onConfirm={handleConfirm}
                   onCancel={hideDatePicker}
                 />
@@ -159,10 +176,13 @@ const ProductScreen = inject('shop')(
                     paddingHorizontal: SIZES.padding * 2,
                   }}
                 >
-                  <StyledTextInput label='Special Instructions' />
+                  <StyledTextInput
+                    label='Special Instructions'
+                    onChangeText={setSpecialInstructions}
+                  />
                 </View>
               </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             {/* Order Button */}
             <View
@@ -193,6 +213,16 @@ const ProductScreen = inject('shop')(
                       .get(product.id)
                       .options.filter((e) => e.name === 'Size').length
                   ) {
+                    // Add special instructions to selection options
+                    specialInstructions.length &&
+                      shop.selectionStore.addOption(product, {
+                        name: 'Special Instructions',
+                        value: specialInstructions,
+                        // price: 0,
+                        // id: 0
+                      });
+
+                    // Add selections to cart
                     shop.cart.addProduct(
                       shop.selectionStore.selections.get(product.id)
                     );
@@ -211,7 +241,11 @@ const ProductScreen = inject('shop')(
                   $
                   {(shop.selectionStore.selections
                     ?.get(product.id)
-                    .subTotal.toFixed(2) > 0 &&
+                    .options.filter((e) => e.name === 'Size').length &
+                    (shop.selectionStore.selections
+                      ?.get(product.id)
+                      .subTotal.toFixed(2) >
+                      0) &&
                     shop.selectionStore.selections
                       ?.get(product.id)
                       .subTotal.toFixed(2)) ||

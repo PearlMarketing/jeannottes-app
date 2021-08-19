@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-jeannottesapp-dev-195250-authRole",
+      "UnauthRoleArn": "arn:aws:iam::976123908877:role/amplify-jeannottesapp-dev-195250-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::976123908877:role/amplify-jeannottesapp-dev-195250-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-jeannottesapp-dev-195250-deployment",
+      "UnauthRoleName": "amplify-jeannottesapp-dev-195250-unauthRole",
+      "StackName": "amplify-jeannottesapp-dev-195250",
+      "StackId": "arn:aws:cloudformation:us-east-2:976123908877:stack/amplify-jeannottesapp-dev-195250/67712e40-007f-11ec-8462-065cf403b8da",
+      "AmplifyAppId": "du6cgmdshttqa"
+    }
+  }
+}

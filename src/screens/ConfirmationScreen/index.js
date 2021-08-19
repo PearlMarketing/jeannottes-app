@@ -43,6 +43,7 @@ const ConfirmationScreen = ({ route, navigation }) => {
         navigation={navigation}
         dark
         title='Order Confirmation'
+        noback
       />
       {/* {isLoadingProduct ? (
         <Loader />
@@ -51,11 +52,63 @@ const ConfirmationScreen = ({ route, navigation }) => {
         <View
           style={{
             paddingHorizontal: SIZES.padding * 2,
+            paddingVertical: SIZES.padding,
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: SIZES.width,
+            backgroundColor: 'white',
+            flex: 1,
           }}
         >
-          <Text>
-            Your order has been submitted. Here are the details of your order.
+          <Text
+            style={{
+              ...FONTS.h3,
+              paddingVertical: 20,
+              textAlign: 'center',
+            }}
+          >
+            Your order has been submitted. An email has been sent to your email
+            address with your order details.
           </Text>
+          <TouchableOpacity
+            style={{
+              backgroundColor: COLORS.primary,
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              ...styles.shadow,
+              borderRadius: SIZES.radius * 2,
+            }}
+            onPress={() => {
+              // TODO: only allow if there are items in cart
+              navigation.navigate('Shop', {
+                // product: product,
+                // selectedOptions: selectedOptions,
+              });
+            }}
+          >
+            <Text
+              style={{
+                color: COLORS.white,
+                ...FONTS.h3,
+              }}
+            >
+              Order Items
+            </Text>
+            <Ionicons
+              name='arrow-forward'
+              style={{
+                color: COLORS.white,
+                position: 'absolute',
+                right: 20,
+                // ...FONTS.h3,
+              }}
+              size={26}
+            />
+          </TouchableOpacity>
         </View>
       </>
       {/* )} */}
@@ -66,7 +119,7 @@ const ConfirmationScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.lightGray2,
+    backgroundColor: COLORS.white,
   },
   shadow: {
     shadowColor: '#000',

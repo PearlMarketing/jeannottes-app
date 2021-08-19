@@ -30,7 +30,7 @@ const Checkbox = inject('shop')(
               shop.selectionStore.selections
                 ?.get(product.id)
                 .options.filter((e) => e.name === option.name)[0]
-                ?.value.includes(item.name)
+                ?.value.filter((e) => e.name === item.name).length
             ) {
               shop.selectionStore.removeOptionItem(product, option, item)
             } else {
@@ -48,7 +48,7 @@ const Checkbox = inject('shop')(
               {shop.selectionStore.selections
                 ?.get(product.id)
                 .options.filter((e) => e.name === option.name)[0]
-                ?.value.includes(item.name) ? (
+                ?.value.filter((e) => e.name === item.name).length ? (
                 <Ionicons name='checkbox-outline' size={28} />
               ) : (
                 <Ionicons name='square-outline' size={28} />

@@ -77,5 +77,6 @@ export const ShopStore = types
     afterCreate() {
       self.productStore.loadProducts();
       self.optionStore.loadOptions();
+      self.userStore.loadUser();
     },
   }));

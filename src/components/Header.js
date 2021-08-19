@@ -4,7 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { icons, SIZES, COLORS, FONTS } from '../constants';
 
-const Header = ({ route, navigation, page, dark, transparent, title }) => {
+const Header = ({
+  route,
+  navigation,
+  page,
+  dark,
+  transparent,
+  title,
+  noback,
+}) => {
   return (
     <View style={[styles.header, transparent && styles.headerTransparent]}>
       <TouchableOpacity
@@ -16,11 +24,13 @@ const Header = ({ route, navigation, page, dark, transparent, title }) => {
         }}
         onPress={() => navigation.goBack()}
       >
-        <Ionicons
-          name='arrow-back'
-          size={32}
-          color={dark ? COLORS.primary : COLORS.white}
-        />
+        {!noback && (
+          <Ionicons
+            name='arrow-back'
+            size={32}
+            color={dark ? COLORS.primary : COLORS.white}
+          />
+        )}
       </TouchableOpacity>
 
       <View
@@ -47,8 +57,7 @@ const Header = ({ route, navigation, page, dark, transparent, title }) => {
           // paddingLeft: SIZES.padding * 2,
           justifyContent: 'center',
         }}
-      >
-      </View>
+      ></View>
 
       {/* Restaurant Name Section */}
       {/* <View

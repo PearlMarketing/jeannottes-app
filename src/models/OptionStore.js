@@ -10,6 +10,7 @@ export const Option = types.model('Option', {
     types.model({
       name: types.string,
       price: types.optional(types.number, 0),
+      isQty: types.optional(types.boolean, false),
     })
   ),
   type: types.string,
@@ -67,8 +68,10 @@ export const OptionStore = types
             id: radioOptions.length,
             name: optionsData.checkboxes_internal_name[i],
             options: optionsData.multiple_checkboxes_options_value[i].map(
-              (e, i) => ({
+              (e, j) => ({
                 name: e,
+                price: parseFloat(optionsData.multiple_checkboxes_options_price[i][j].split("*")[0]),
+                isQty: optionsData.checkboxes_quantity[i] !== "",
               })
             ),
             type: 'checkbox',

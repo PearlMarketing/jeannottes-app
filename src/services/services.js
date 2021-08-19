@@ -1,5 +1,5 @@
-import api from './api'
-import api_v2 from './api_v2'
+import wc_api from './wc_api'
+import wp_api from './wp_api'
 import axios from 'axios'
 
 axios.defaults.baseURL = 'https://jmapp.pearlclients.com'
@@ -8,47 +8,47 @@ axios.defaults.baseURL = 'https://jmapp.pearlclients.com'
 class Service {
     // API
     Products(params) {
-        return api.get(`/products?${params}`)
+        return wc_api.get(`/products?${params}`)
     }
 
     Product(id) {
-        return api.get(`/products/${id}`)
+        return wc_api.get(`/products/${id}`)
     }
 
     ProductVariations(id) {
-        return api.get(`/products/${id}/variations`)
+        return wc_api.get(`/products/${id}/variations`)
     }
 
     ProductEPO() {
-        return api_v2.get('/tm_global_cp')
+        return wp_api.get('/tm_global_cp')
     }
 
     Categories(per_page = 50) {
-        return api.get(`/products/categories?per_page=${per_page}&order=desc`)
+        return wc_api.get(`/products/categories?per_page=${per_page}&order=desc`)
     }
 
     Billing() {
-        return api.get("/payment_gateways")
+        return wc_api.get("/payment_gateways")
     }
 
     CreateCustomer(data) {
-        return api.post("/customers", data)
+        return wc_api.post("/customers", data)
     }
 
     UpdateCustomer(id, data) {
-        return api.post(`/customers/${id}`, data)
+        return wc_api.post(`/customers/${id}`, data)
     }
 
     CreateOrder(data) {
-        return api.post("/orders", data)
+        return wc_api.post("/orders", data)
     }
 
     CustomerOrders(id) {
-        return api.get(`/orders?customer=${id}&per_page=50`)
+        return wc_api.get(`/orders?customer=${id}&per_page=50`)
     }
 
     Customer(id) {
-        return api.get(`/customers/${id}`)
+        return wc_api.get(`/customers/${id}`)
     }
 
     // Other
@@ -65,7 +65,8 @@ class Service {
     }
 
     SetToken(data) {
-        return axios.post(`/jwt-auth/v1/token`, data)
+        return axios.post(`/wp-json/jwt-auth/v1/token`, data)
+        // return axios.post(`/jwt-auth/v1/token`, data)
     }
 
     TokenValidate(token = null) {

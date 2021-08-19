@@ -1,6 +1,6 @@
-if (__DEV__) {
-  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
-}
+// if (__DEV__) {
+//   import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
+// }
 import React, { useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -44,6 +44,11 @@ import ProductScreen from './src/screens/ProductScreen';
 import CartScreen from './src/screens/CartScreen';
 
 import { ShopStore } from './src/models/ShopStore';
+
+import Amplify from 'aws-amplify'
+import config from './src/aws-exports'
+Amplify.configure(config)
+
 
 const fetcher = (url) => window.fetch(url).then((response) => response.json());
 const shop = ShopStore.create(

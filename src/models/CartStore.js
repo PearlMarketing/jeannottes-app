@@ -6,8 +6,13 @@ import {
   applySnapshot,
   destroy,
   flow,
+  clone,
+  cast,
+  castToSnapshot,
 } from 'mobx-state-tree';
 import { Product } from './ProductStore';
+
+import { Option } from './SelectionStore';
 
 import Service from '../services/services';
 
@@ -18,14 +23,25 @@ const CartEntry = types
     product: types.number,
     name: types.string,
     type: types.string,
-    options: types.array(
-      types.model({
-        id: types.maybe(types.number),
-        name: types.string,
-        value: types.union(types.string, types.array(types.string)),
-        price: types.optional(types.number, 0),
-      })
-    ),
+    options: types.array(Option),
+    // options: types.array(
+    //   types.model({
+    //     id: types.maybe(types.number),
+    //     name: types.string,
+    //     value: types.union(
+    //       types.string,
+    //       types.array(
+    //         // Add objects with pricing and qty
+    //         types.model({
+    //           name: types.string,
+    //           qty: types.number,
+    //           price: types.optional(types.number, 0),
+    //         })
+    //       )
+    //     ),
+    //     price: types.optional(types.number, 0),
+    //   })
+    // ),
     price: types.number,
     type: types.string,
   })
@@ -94,20 +110,29 @@ export const CartStore = types
     //   }
     // },
     function addProduct(entry, notify = true) {
+      // console.log(entry);
+      // console.log(getSnapshot(entry));
       self.entries.push({
-        ...entry,
+        ...getSnapshot(entry),
         product: entry.id,
         id: self.entries.length,
-        options: entry.options.map((option) => ({
-          id: option.id,
-          name: option.name,
-          value: Array.isArray(option.value)
-            ? Array.from(option.value)
-            : option.value,
-          price: option.price,
-        })),
+        // options: entry.options,
+        // options: entry.options.map((option) => ({
+        //   id: option.id,
+        //   name: option.name,
+        //   // value: option.value,
+        //   value: Array.isArray(option.value)
+        //     ? option.value.map((extra) => ({
+        //         name: extra.name,
+        //         qty: extra.qty,
+        //         price: extra.price,
+        //       }))
+        //     : option.value,
+        //   price: option.price,
+        // })),
       });
       if (notify) self.shop.alert('Added to cart');
+      console.log(self.entries);
     }
     function remove(product) {
       destroy(product);
@@ -121,21 +146,41 @@ export const CartStore = types
 
         entry.options.map((option) => {
           // maps each product option in WC format
-          const formattedOption = {
-            mode: 'builder',
-            element: {
-              type: '',
-            },
-            name: option.name,
-            value: option.value,
-            price: option.price,
-            section: '',
-            // TODO: add conditional for quantity items
-            quantity: 1,
-          };
+          if (Array.isArray(option.value)) {
+            option.value.map((value) => {
+              const formattedOption = {
+                mode: 'builder',
+                element: {
+                  type: '',
+                },
+                name: option.name,
+                value: value.name,
+                price: value.price.toString(),
+                section: '',
+                // TODO: add conditional for quantity items
+                quantity: 1,
+              };
 
-          // console.log(option);
-          productOptions.push(formattedOption)
+              // console.log(option);
+              productOptions.push(formattedOption);
+            });
+          } else {
+            const formattedOption = {
+              mode: 'builder',
+              element: {
+                type: '',
+              },
+              name: option.name,
+              value: option.value,
+              price: option.price.toString(),
+              section: '',
+              // TODO: add conditional for quantity items
+              quantity: 1,
+            };
+
+            // console.log(option);
+            productOptions.push(formattedOption);
+          }
         });
 
         // take each entry and format
@@ -144,7 +189,7 @@ export const CartStore = types
           variation_id: entry.options.filter((e) => e.name === 'Size')[0].id,
           quantity: 1,
           // calculate subtotal for each item
-          subtotal: entry.subTotal,
+          subtotal: entry.subTotal.toString(),
           meta_data: [
             {
               key: '_tmcartepo_data',
@@ -160,9 +205,11 @@ export const CartStore = types
         lineItems.push(entryData);
       });
       const orderData = {
+        customer_id: self.shop.user.id,
         payment_method: 'cod',
         payment_method_title: 'Cash',
         set_paid: true,
+        status: 'processing',
         billing: {
           first_name: self.shop.user.firstName,
           last_name: self.shop.user.lastName,
@@ -337,16 +384,20 @@ export const CartStore = types
 
       try {
         // Post to wc
-        // yield Service.CreateOrder(orderData);
+        const response = yield Service.CreateOrder(orderData);
+
+        // console.log(orderData);
 
         // If successful, clear cart
-        console.log(orderData);
+        // console.warn(orderData);
         self.clear();
 
+        return response
         // self.shop.alert(`Bought products for ${total} $ !`);
       } catch (err) {
         console.error('Failed to post order ', err);
         // If not successful, show error toast
+        throw err;
       }
     });
 

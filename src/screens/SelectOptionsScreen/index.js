@@ -19,6 +19,7 @@ import Loader from '../../components/Loader';
 
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Checkbox from './Checkbox';
+import Quantity from './Quantity';
 // import Service from '../../services/services';
 
 const SelectOptionsScreen = inject('shop')(
@@ -71,9 +72,23 @@ const SelectOptionsScreen = inject('shop')(
                 paddingBottom: 10,
               }}
             >
-              {option.options.map((item, i) => (
-                <Checkbox key={i} product={product} option={option} item={item} />
-              ))}
+              {option.options.map((item, i) =>
+                item.isQty ? (
+                  <Quantity
+                    key={i}
+                    product={product}
+                    option={option}
+                    item={item}
+                  />
+                ) : (
+                  <Checkbox
+                    key={i}
+                    product={product}
+                    option={option}
+                    item={item}
+                  />
+                )
+              )}
             </View>
           </ScrollView>
 

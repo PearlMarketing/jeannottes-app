@@ -81,7 +81,11 @@ const ProductOptions = inject('shop')(
                       .options.filter((e) => e.name === item.name)[0]?.value ||
                     ''
                   : item.type === 'checkbox'
-                  ? (shop.selectionStore.selections
+                  ? 
+                  (shop.selectionStore.selections
+                      ?.get(product.id)
+                      .options.filter((e) => e.name === item.name)[0]?.value
+                      .reduce((sum, e) => sum + e.qty, 0) || shop.selectionStore.selections
                       ?.get(product.id)
                       .options.filter((e) => e.name === item.name)[0]?.value
                       .length || 0) + ' Selected'

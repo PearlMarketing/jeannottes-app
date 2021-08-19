@@ -73,7 +73,7 @@ const CartScreen = inject('shop')(
                 <Text key={i}>
                   {option.name}:{' '}
                   {Array.isArray(option.value)
-                    ? option.value.join(', ')
+                    ? option.value.reduce((array, e) => array + e.name + '(' + e.qty + ') ', '')
                     : option.value}
                 </Text>
               ))}
@@ -141,75 +141,145 @@ const CartScreen = inject('shop')(
         <Loader />
       ) : ( */}
         <>
-          {/* Line Items */}
-          <FlatList
-            // style={{
-            //   flexGrow: 0,
-            // }}
-            data={shop.cart.entries}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => <LineItem key={item.id} item={item} />}
-            ItemSeparatorComponent={RenderSeparator}
-            ListFooterComponent={
-              <>
-                <RenderSeparator />
-                <LineTotal text='Subtotal' total={shop.cart.total.toFixed(2)} />
-                <RenderSeparator />
-              </>
-            }
-          />
-
-          {/* Order Button */}
-          <View
-            style={{
-              paddingHorizontal: SIZES.padding * 2,
-              paddingVertical: SIZES.padding,
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: SIZES.width,
-              backgroundColor: 'white',
-            }}
-          >
-            <TouchableOpacity
+          {/* // TODO: show message if no items */}
+          {!shop.cart.entries.length ? (
+            <View
               style={{
-                backgroundColor: COLORS.primary,
-                width: '100%',
-                flexDirection: 'row',
-                justifyContent: 'center',
+                paddingHorizontal: SIZES.padding * 2,
+                paddingVertical: SIZES.padding,
                 alignItems: 'center',
-                paddingVertical: 10,
-                paddingHorizontal: 20,
-                ...styles.shadow,
-                borderRadius: SIZES.radius * 2,
-              }}
-              onPress={() => {
-                // TODO: only allow if there are items in cart
-                navigation.navigate('Checkout', {
-                  // product: product,
-                  // selectedOptions: selectedOptions,
-                });
+                justifyContent: 'center',
+                width: SIZES.width,
+                backgroundColor: 'white',
+                flex: 1,
               }}
             >
               <Text
                 style={{
-                  color: COLORS.white,
                   ...FONTS.h3,
+                  paddingVertical: 20
                 }}
               >
-                Checkout
+                No Items in Cart
               </Text>
-              <Ionicons
-                name='arrow-forward'
+              <TouchableOpacity
                 style={{
-                  color: COLORS.white,
-                  position: 'absolute',
-                  right: 20,
-                  // ...FONTS.h3,
+                  backgroundColor: COLORS.primary,
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  ...styles.shadow,
+                  borderRadius: SIZES.radius * 2,
                 }}
-                size={26}
+                onPress={() => {
+                  // TODO: only allow if there are items in cart
+                  navigation.navigate('Shop', {
+                    // product: product,
+                    // selectedOptions: selectedOptions,
+                  });
+                }}
+              >
+                <Text
+                  style={{
+                    color: COLORS.white,
+                    ...FONTS.h3,
+                  }}
+                >
+                  Order Items
+                </Text>
+                <Ionicons
+                  name='arrow-forward'
+                  style={{
+                    color: COLORS.white,
+                    position: 'absolute',
+                    right: 20,
+                    // ...FONTS.h3,
+                  }}
+                  size={26}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              {/* Line Items */}
+              <FlatList
+                // style={{
+                //   flexGrow: 0,
+                // }}
+                data={shop.cart.entries}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <LineItem key={item.id} item={item} />
+                )}
+                ItemSeparatorComponent={RenderSeparator}
+                ListFooterComponent={
+                  <>
+                    <RenderSeparator />
+                    <LineTotal
+                      text='Subtotal'
+                      total={shop.cart.total.toFixed(2)}
+                    />
+                    <RenderSeparator />
+                  </>
+                }
               />
-            </TouchableOpacity>
-          </View>
+              {/* Order Button */}
+              {/* // TODO: fade if no items in cart */}
+              <View
+                style={{
+                  paddingHorizontal: SIZES.padding * 2,
+                  paddingVertical: SIZES.padding,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: SIZES.width,
+                  backgroundColor: 'white',
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: COLORS.primary,
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                    paddingHorizontal: 20,
+                    ...styles.shadow,
+                    borderRadius: SIZES.radius * 2,
+                  }}
+                  onPress={() => {
+                    // TODO: only allow if there are items in cart
+                    navigation.navigate('Checkout', {
+                      // product: product,
+                      // selectedOptions: selectedOptions,
+                    });
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: COLORS.white,
+                      ...FONTS.h3,
+                    }}
+                  >
+                    Checkout
+                  </Text>
+                  <Ionicons
+                    name='arrow-forward'
+                    style={{
+                      color: COLORS.white,
+                      position: 'absolute',
+                      right: 20,
+                      // ...FONTS.h3,
+                    }}
+                    size={26}
+                  />
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </>
         {/* )} */}
       </SafeAreaView>

@@ -4,26 +4,43 @@ import { SIZES } from '../constants';
 
 import Service from '../services/services';
 
+export const Option = types.model('Option', {
+  id: types.maybe(types.number),
+  name: types.string,
+  value: types.union(
+    types.string,
+    types.array(
+      // Add objects with pricing and qty
+      types.model({
+        name: types.string,
+        qty: types.number,
+        price: types.optional(types.number, 0),
+      })
+    )
+  ),
+  price: types.optional(types.number, 0),
+});
+
 export const Selection = types
   .model('Selection', {
     id: types.identifierNumber,
     name: types.string,
     type: types.string,
-    options: types.array(
-      types.model({
-        id: types.maybe(types.number),
-        name: types.string,
-        value: types.union(types.string, types.array(types.string)),
-        price: types.optional(types.number, 0),
-      })
-    ),
+    options: types.array(Option),
     price: types.number,
     type: types.string,
     isAvailable: false,
   })
   .views((self) => ({
     get subTotal() {
-      return self.options.reduce((sum, e) => sum + e.price, 0);
+      const size = self.options.reduce((sum, e) => sum + e.price, 0);
+      const extras = self.options.reduce((sum, e) => {
+        let addon = 0;
+        Array.isArray(e.value) &&
+          (addon += e.value.reduce((sum, e) => sum + e.price * e.qty, 0));
+        return sum + addon;
+      }, 0);
+      return size + extras;
     },
   }));
 
@@ -89,14 +106,38 @@ export const SelectionStore = types
       self.selections
         .get(product.id)
         .options.filter((e) => e.name === option.name)[0]
-        .value.push(item.name);
+        .value.push({ name: item.name, qty: 1, price: item.price });
+      // console.log(self.selections.get(product.id));
+    }
+
+    function increaseQty(product, option, item) {
+      self.selections
+        .get(product.id)
+        .options.filter((e) => e.name === option.name)[0]
+        .value.filter((e) => e.name === item.name)[0].qty++;
+    }
+
+    function decreaseQty(product, option, item) {
+      self.selections
+        .get(product.id)
+        .options.filter((e) => e.name === option.name)[0]
+        .value.filter((e) => e.name === item.name)[0].qty--;
+
+      if (
+        self.selections
+          .get(product.id)
+          .options.filter((e) => e.name === option.name)[0]
+          .value.filter((e) => e.name === item.name)[0].qty < 1
+      ) {
+        removeOptionItem(product, option, item);
+      }
     }
 
     function removeOptionItem(product, option, item) {
       const itemIndex = self.selections
         .get(product.id)
         .options.filter((e) => e.name === option.name)[0]
-        .value.findIndex((e) => e === item.name);
+        .value.findIndex((e) => e.name === item.name);
       if (itemIndex > -1) {
         const updatedItems = self.selections
           .get(product.id)
@@ -112,5 +153,7 @@ export const SelectionStore = types
       updateSelections,
       addOptionItem,
       removeOptionItem,
+      increaseQty,
+      decreaseQty,
     };
   });
