@@ -28,7 +28,6 @@ export const Selection = types
     type: types.string,
     options: types.array(Option),
     price: types.number,
-    type: types.string,
     isAvailable: false,
   })
   .views((self) => ({

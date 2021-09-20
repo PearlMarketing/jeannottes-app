@@ -137,7 +137,7 @@ const LogInScreen = inject('shop')(
                         JSON.stringify(auth.data)
                       );
                       await shop.userStore.loadUser();
-                      console.log(shop.user);
+                      // console.log(shop.user);
                       ShopToast(
                         'Successfully Logged In to ' + shop.user.nicename
                       );

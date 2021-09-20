@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ShopNavigator from './ShopNavigator';
 import CartNavigator from './CartNavigator';
 import MoreNavigator from './MoreNavigator';
+import AccountScreen from '../screens/AccountScreen';
+import { Pressable } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -35,6 +37,19 @@ const TabNavigator = inject('shop')(
               return (
                 <Ionicons
                   name={focused ? 'cart' : 'cart-outline'}
+                  size={size}
+                  color={color}
+                  style={
+                    {
+                      // padding:10
+                    }
+                  }
+                />
+              );
+            } else if (route.name === 'Reorder') {
+              return (
+                <Ionicons
+                  name='reload'
                   size={size}
                   color={color}
                   style={
@@ -74,8 +89,12 @@ const TabNavigator = inject('shop')(
         <Tab.Screen
           name='Cart'
           component={CartNavigator}
-          options={{ tabBarBadge: shop.cart.entries.length || null }}
+          options={{
+            tabBarBadge: shop.cart.entries.length || null,
+            unmountOnBlur: true,
+          }}
         />
+        <Tab.Screen name='Reorder' component={AccountScreen} />
         <Tab.Screen name='More' component={MoreNavigator} />
       </Tab.Navigator>
     );

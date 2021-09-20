@@ -66,14 +66,21 @@ const CartScreen = inject('shop')(
             justifyContent: 'space-between',
           }}
         >
-          <View>
+          <View style={{ flexShrink: 1 }}>
             <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
             <View>
               {item.options.map((option, i) => (
                 <Text key={i}>
                   {option.name}:{' '}
                   {Array.isArray(option.value)
-                    ? option.value.reduce((array, e) => array + e.name + '(' + e.qty + ') ', '')
+                    ? option.value.reduce(
+                        (array, e, i) =>
+                          array +
+                          (i !== 0 ? ', ' : '') +
+                          e.name +
+                          (e.qty > 1 ? '(' + e.qty + ')' : ''),
+                        ''
+                      )
                     : option.value}
                 </Text>
               ))}
@@ -157,7 +164,7 @@ const CartScreen = inject('shop')(
               <Text
                 style={{
                   ...FONTS.h3,
-                  paddingVertical: 20
+                  paddingVertical: 20,
                 }}
               >
                 No Items in Cart

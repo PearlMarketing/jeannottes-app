@@ -60,7 +60,7 @@ export const UserStore = types
           phone: user.phone || wc.billing.phone,
           billing: { ...wc.billing },
         };
-        console.log(self.user);
+        // console.log(self.user);
       } catch (err) {
         console.log('No user token found in local storage', err);
       }
@@ -128,7 +128,7 @@ export const UserStore = types
         ...user,
       };
       self.user = userData;
-      console.log(userData)
+      // console.log(userData)
     }
 
     function clearUser() {

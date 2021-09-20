@@ -94,7 +94,7 @@ const MoreScreen = inject('shop')(
               </View>
             </TouchableOpacity>
             <RenderSeparator />
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={styles.item}
               onPress={() => {
                 navigation.navigate('Feedback');
@@ -122,11 +122,11 @@ const MoreScreen = inject('shop')(
                     ...FONTS.body3,
                   }}
                 >
-                  Provide Feedback
+                  Give Feedback / Report A Bug
                 </Text>
               </View>
             </TouchableOpacity>
-            <RenderSeparator /> */}
+            <RenderSeparator />
           </ScrollView>
         </>
         {/* )} */}

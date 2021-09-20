@@ -43,11 +43,23 @@ const CartEntry = types
     //   })
     // ),
     price: types.number,
-    type: types.string,
   })
   .views((self) => ({
+    // get subTotal() {
+    //   return self.options.reduce((sum, e) => sum + e.price, 0);
+    // },
     get subTotal() {
-      return self.options.reduce((sum, e) => sum + e.price, 0);
+      const size = self.options.reduce((sum, e) => sum + e.price, 0);
+      const extras = self.options.reduce((sum, e) => {
+        let addon = 0;
+        Array.isArray(e.value) &&
+          (addon += e.value.reduce((sum, e) => sum + e.price * e.qty, 0));
+        return sum + addon;
+      }, 0);
+      return size + extras;
+    },
+    get tax() {
+      return self.subTotal * 0.09;
     },
   }))
   .actions((self) => ({
@@ -132,8 +144,124 @@ export const CartStore = types
         // })),
       });
       if (notify) self.shop.alert('Added to cart');
-      console.log(self.entries);
+      // console.log(self.entries);
     }
+    const reorderProduct = flow(function* reorderProduct(entry, notify = true) {
+      const productType = self.shop.products.get(entry.product_id).type;
+
+      // console.log('type:' + productType);
+
+      // Each option section needs to be an array
+      let options = [];
+
+      // Push Size option first
+      productType === 'variable' &&
+        (self.shop.productStore.products.get(entry.product_id).loadedVariations
+          ? console.log('variations already loaded')
+          : yield self.shop.variationStore.loadVariations(
+              entry.product_id,
+              entry.name
+            ));
+
+      options.push({
+        id: entry.variation_id,
+        name: 'Size',
+        value: entry.meta_data.filter((e) => e.key === 'pa_size')[0].display_value,
+        price: self.shop.availableVariations
+          .filter((e) => e.id === entry.product_id)[0]
+          .options.filter(
+            (e) =>
+              e.name.toLowerCase() ===
+              entry.meta_data
+                .filter((e) => e.key === 'pa_size')[0]
+                .display_value.toLowerCase()
+          )[0].price,
+      });
+
+      entry.meta_data
+        .filter((e) => e.key === '_tmcartepo_data')[0]
+        .value.map((option, i) => {
+          // ! Combine options of the same type
+
+          // ? check if option name already exists in array, if not, add entire object
+          options.filter((e) => e.name === option.name).length === 0 || i === 0
+            ? options.push({
+                name: option.name,
+                value: [
+                  {
+                    name: option.value,
+                    qty: option.quantity,
+                    price:
+                      self.shop.availableOptions
+                        .filter((product) => product.name === option.name)[0]
+                        ?.options?.filter(
+                          (extra) => extra.name === option.value
+                        )[0].price || 0,
+                  },
+                ],
+              })
+            : // ? otherwise, if option type already exists, add just the value
+              (options
+                .filter((e) => e.name === option.name)[0]
+                .value.push({
+                  name: option.value,
+                  qty: option.quantity,
+                  price:
+                    self.shop.availableOptions
+                      .filter((product) => product.name === option.name)[0]
+                      ?.options?.filter(
+                        (extra) => extra.name === option.value
+                      )[0].price || 0,
+                }),
+              console.log(options.filter((e) => e.name === option.name)[0]));
+        });
+
+      const newEntry = {
+        product: entry.product_id,
+        id: self.entries.length,
+        name: entry.parent_name || entry.name,
+        options: options,
+        type: productType,
+        price: self.shop.availableProducts.filter(
+          (product) => product.id === entry.product_id
+        )[0].price,
+      };
+
+      self.entries.push(newEntry);
+
+      // ! This is the model
+      // id: types.maybe(types.number),
+      // name: types.string,
+      // value: types.union(
+      //   types.string,
+      //   types.array(
+      //     // Add objects with pricing and qty
+      //     types.model({
+      //       name: types.string,
+      //       qty: types.number,
+      //       price: types.optional(types.number, 0),
+      //     })
+      //   )
+      // ),
+      // price: types.optional(types.number, 0),
+
+      // ! This was my old map
+      // options: entry.options.map((option) => ({
+      //   id: option.id,
+      //   name: option.name,
+      //   // value: option.value,
+      //   value: Array.isArray(option.value)
+      //     ? option.value.map((extra) => ({
+      //         name: extra.name,
+      //         qty: extra.qty,
+      //         price: extra.price,
+      //       }))
+      //     : option.value,
+      //   price: option.price,
+      // })),
+      if (notify) self.shop.alert('Added to cart');
+      // console.log(self.entries);
+    });
     function remove(product) {
       destroy(product);
     }
@@ -144,18 +272,37 @@ export const CartStore = types
         // format product options
         let productOptions = [];
 
-        entry.options.map((option) => {
-          // maps each product option in WC format
-          if (Array.isArray(option.value)) {
-            option.value.map((value) => {
+        entry.options
+          .filter((option) => option.name !== 'Size')
+          .map((option) => {
+            // maps each product option in WC format
+            if (Array.isArray(option.value)) {
+              option.value.map((value) => {
+                const formattedOption = {
+                  mode: 'builder',
+                  element: {
+                    type: '',
+                  },
+                  name: option.name,
+                  value: value.name,
+                  price: value.price,
+                  section: '',
+                  // TODO: add conditional for quantity items
+                  quantity: 1,
+                };
+
+                // console.log(option);
+                productOptions.push(formattedOption);
+              });
+            } else {
               const formattedOption = {
                 mode: 'builder',
                 element: {
                   type: '',
                 },
                 name: option.name,
-                value: value.name,
-                price: value.price.toString(),
+                value: option.value,
+                price: option.price,
                 section: '',
                 // TODO: add conditional for quantity items
                 quantity: 1,
@@ -163,25 +310,8 @@ export const CartStore = types
 
               // console.log(option);
               productOptions.push(formattedOption);
-            });
-          } else {
-            const formattedOption = {
-              mode: 'builder',
-              element: {
-                type: '',
-              },
-              name: option.name,
-              value: option.value,
-              price: option.price.toString(),
-              section: '',
-              // TODO: add conditional for quantity items
-              quantity: 1,
-            };
-
-            // console.log(option);
-            productOptions.push(formattedOption);
-          }
-        });
+            }
+          });
 
         // take each entry and format
         let entryData = {
@@ -190,6 +320,7 @@ export const CartStore = types
           quantity: 1,
           // calculate subtotal for each item
           subtotal: entry.subTotal.toString(),
+          total: entry.subTotal.toString(),
           meta_data: [
             {
               key: '_tmcartepo_data',
@@ -392,7 +523,7 @@ export const CartStore = types
         // console.warn(orderData);
         self.clear();
 
-        return response
+        return response;
         // self.shop.alert(`Bought products for ${total} $ !`);
       } catch (err) {
         console.error('Failed to post order ', err);
@@ -411,6 +542,7 @@ export const CartStore = types
 
     return {
       addProduct,
+      reorderProduct,
       remove,
       checkout,
       clear,

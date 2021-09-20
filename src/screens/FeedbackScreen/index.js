@@ -19,6 +19,8 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
+import { validateEmail } from '../../services/helpers';
+
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
@@ -26,12 +28,52 @@ import ShopToast from '../../components/ShopToast';
 const FeedbackScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
     const [currentUser, setCurrentUser] = React.useState({
-      firstName: '',
-      lastName: '',
       email: '',
-      phone: '',
       message: '',
     });
+
+    const sendFeedback = async () => {
+      if (currentUser.email === '') {
+        console.log('missing email');
+        ShopToast('Please enter an email address.');
+      } else if (currentUser.message === '') {
+        console.log('missing message');
+        ShopToast('Please enter a message.');
+      } else if (!validateEmail(currentUser.email)) {
+        // not a valid email
+        console.log('email not valid');
+        ShopToast('Email address not valid. Please enter a valid email.');
+      } else {
+        try {
+          // passes validation
+          const feedbackData = {
+            email: currentUser.email,
+            message: currentUser.message,
+          };
+          const testData = {
+            email: 'culverlau@gmail.com',
+            message: 'This is a test',
+          }
+          console.log(feedbackData);
+          // const response = await Service.CreateCustomer(customerData);
+          // console.log(response);
+
+          ShopToast(
+            'Thank you, feedback was successfully sent.'
+          );
+          setCurrentUser({
+            email: '',
+            message: '',
+          });
+          navigation.navigate('More');
+        } catch (error) {
+          ShopToast(
+            'An error occured while sending feedback. Please try again.'
+          );
+          console.error('Failed to send feedback', error);
+        }
+      }
+    };
 
     function FocusAwareStatusBar(props) {
       const isFocused = useIsFocused();
@@ -74,28 +116,6 @@ const FeedbackScreen = inject('shop')(
                 // paddingHorizontal: SIZES.padding * 2,
               }}
             >
-              <StyledTextInput
-                placeholder='Enter First Name'
-                label='First Name'
-                onChangeText={(value) =>
-                  setCurrentUser({
-                    ...currentUser,
-                    firstName: value,
-                  })
-                }
-                value={currentUser.firstName}
-              />
-              <StyledTextInput
-                placeholder='Enter Last Name'
-                label='Last Name'
-                onChangeText={(value) =>
-                  setCurrentUser({
-                    ...currentUser,
-                    lastName: value,
-                  })
-                }
-                value={currentUser.lastName}
-              />
               <StyledTextInput
                 placeholder='Enter Email Address'
                 label='Email Address'
@@ -147,7 +167,7 @@ const FeedbackScreen = inject('shop')(
                   ...styles.shadow,
                   borderRadius: SIZES.radius * 2,
                 }}
-                // onPress={sendFeedback}
+                onPress={sendFeedback}
               >
                 <Text
                   style={{

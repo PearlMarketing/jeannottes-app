@@ -19,6 +19,8 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
+import { validateEmail, validatePhone } from '../../services/helpers';
+
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
@@ -88,16 +90,16 @@ const CheckoutScreen = inject('shop')(
       return isFocused ? <StatusBar {...props} /> : null;
     }
 
-    const validateEmail = (email) => {
-      var re =
-        /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
-      return re.test(email);
-    };
+    // const validateEmail = (email) => {
+    //   var re =
+    //     /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+    //   return re.test(email);
+    // };
 
-    const validatePhone = (phone) => {
-      var re = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
-      return re.test(phone);
-    };
+    // const validatePhone = (phone) => {
+    //   var re = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
+    //   return re.test(phone);
+    // };
 
     const RenderSeparator = () => (
       <View
@@ -227,8 +229,8 @@ const CheckoutScreen = inject('shop')(
                   ) : (
                     <Text>
                       Have an account?{' '}
-                      <Text onPress={() => navigation.navigate('Login')}>
-                        Log in Here
+                      <Text style={{fontWeight: 'bold'}} onPress={() => navigation.navigate('Login')}>
+                        Click Here to log in
                       </Text>
                     </Text>
                   )}

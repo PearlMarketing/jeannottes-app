@@ -33,10 +33,7 @@ const SelectOptionsScreen = inject('shop')(
     }
 
     return (
-      <SafeAreaView
-        style={styles.container}
-        edges={['top', 'right', 'bottom', 'left']}
-      >
+      <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
         <FocusAwareStatusBar barStyle='dark-content' />
         <Header
           route={route}
@@ -94,14 +91,20 @@ const SelectOptionsScreen = inject('shop')(
 
           <View
             style={{
-              padding: SIZES.padding * 2,
+              paddingHorizontal: SIZES.padding * 2,
+              paddingVertical: SIZES.padding,
               alignItems: 'center',
               justifyContent: 'center',
-              // position: 'absolute',
               width: SIZES.width,
-              bottom: 0,
-              paddingBottom: isIphoneX ? 30 : 0,
-              // backgroundColor: 'white',
+              backgroundColor: 'white',
+              shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: -3,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 1,
             }}
           >
             <TouchableOpacity

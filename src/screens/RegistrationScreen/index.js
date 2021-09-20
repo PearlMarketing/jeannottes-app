@@ -19,6 +19,8 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
+import { validateEmail, validatePhone } from '../../services/helpers';
+
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
@@ -34,6 +36,108 @@ const RegistrationScreen = inject('shop')(
       password: '',
       confirmPassword: '',
     });
+
+    const createCustomer = async () => {
+      if (currentUser.firstName === '') {
+        console.log('missing first name');
+        ShopToast('Please enter a first name.');
+      } else if (currentUser.lastName === '') {
+        console.log('missing last name');
+        ShopToast('Please enter a last name.');
+      } else if (currentUser.email === '') {
+        console.log('missing email');
+        ShopToast('Please enter an email address.');
+      } else if (currentUser.phone === '') {
+        console.log('missing phone');
+        ShopToast('Please enter a phone number.');
+      } else if (currentUser.username === '') {
+        console.log('missing username');
+        ShopToast('Please enter a username.');
+      } else if (currentUser.password === '') {
+        console.log('missing password');
+        ShopToast('Please enter a password.');
+      } else if (currentUser.confirmPassword === '') {
+        console.log('missing confirm password');
+        ShopToast('Please confirm password.');
+      } else if (currentUser.confirmPassword !== currentUser.password) {
+        console.log('passwords do not match');
+        ShopToast('Passwords do not match.');
+      } else if (!validateEmail(currentUser.email)) {
+        // not a valid email
+        console.log('email not valid');
+        ShopToast('Email address not valid. Please enter a valid email.');
+      } else if (!validatePhone(currentUser.phone)) {
+        // not a valid phone number
+        console.log('phone not valid');
+        ShopToast('Phone number not valid. Please enter a valid phone number.');
+      } else {
+        try {
+          // passes validation
+          const customerData = {
+            username: currentUser.username,
+            password: currentUser.password,
+            first_name: currentUser.firstName,
+            last_name: currentUser.lastName,
+            email: currentUser.email,
+            billing: {
+              first_name: currentUser.firstName,
+              last_name: currentUser.lastName,
+              company: '',
+              address_1: '',
+              address_2: '',
+              city: '',
+              state: '',
+              postcode: '',
+              country: '',
+              phone: currentUser.phone,
+              email: currentUser.email,
+            },
+          };
+          const testData = {
+            email: 'culverlauphotography@gmail.com',
+            first_name: 'Culver',
+            last_name: 'Lau',
+            username: 'culvertest',
+            password: 'test',
+            billing: {
+              first_name: 'Culver',
+              last_name: 'Lau',
+              company: '',
+              address_1: '',
+              address_2: '',
+              city: '',
+              state: '',
+              postcode: '',
+              country: '',
+              phone: '4552134839',
+              email: 'culverlauphotography@gmail.com',
+            },
+          };
+          console.log(customerData);
+          const response = await Service.CreateCustomer(customerData);
+          console.log(response);
+
+          ShopToast(
+            'Successfully Created Account for ' + currentUser.email + '. Please log in.'
+          );
+          setCurrentUser({
+            firstName: '',
+            lastName: '',
+            username: '',
+            email: '',
+            phone: '',
+            password: '',
+            confirmPassword: '',
+          });
+          navigation.navigate('Account');
+        } catch (error) {
+          ShopToast(
+            'An error occured while creating account. Please try again.'
+          );
+          console.error('Failed to post order ', error);
+        }
+      }
+    };
 
     function FocusAwareStatusBar(props) {
       const isFocused = useIsFocused();
@@ -170,7 +274,7 @@ const RegistrationScreen = inject('shop')(
                     confirmPassword: value,
                   })
                 }
-                value={currentUser.password}
+                value={currentUser.confirmPassword}
                 secureTextEntry
                 autoCapitalize='none'
               />
@@ -198,7 +302,7 @@ const RegistrationScreen = inject('shop')(
                   ...styles.shadow,
                   borderRadius: SIZES.radius * 2,
                 }}
-                // onPress={createOrder}
+                onPress={createCustomer}
               >
                 <Text
                   style={{

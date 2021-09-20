@@ -42,12 +42,12 @@ export const VariationStore = types
       self.variations.get(response.id).isAvailable = true;
     }
 
-    const loadVariations = flow(function* loadVariations(product) {
+    const loadVariations = flow(function* loadVariations(productId, productName) {
       try {
-        const response = yield Service.ProductVariations(product.id);
+        const response = yield Service.ProductVariations(productId);
         const variationsData = {
-          id: product.id,
-          productName: product.name,
+          id: productId,
+          productName: productName,
           options: response.data.map((variation, i) => ({
             id: variation.id,
             name: variation.attributes[0].option,
@@ -57,7 +57,7 @@ export const VariationStore = types
         };
         updateVariations(variationsData);
         markLoading(false);
-        self.shop.productStore.markLoadedVariation(product.id, true);
+        self.shop.productStore.markLoadedVariation(productId, true);
       } catch (err) {
         console.error('Failed to load variations ', err);
       }

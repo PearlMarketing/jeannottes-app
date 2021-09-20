@@ -78,7 +78,7 @@ const ProductScreen = inject('shop')(
         if (shop.productStore.products.get(item.id).loadedVariations) {
           console.log('variations already loaded');
         } else {
-          shop.variationStore.loadVariations(item);
+          shop.variationStore.loadVariations(item.id, item.name);
         }
       }
 
@@ -193,6 +193,14 @@ const ProductScreen = inject('shop')(
                 justifyContent: 'center',
                 width: SIZES.width,
                 backgroundColor: 'white',
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: -3,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 1,
               }}
             >
               <TouchableOpacity
