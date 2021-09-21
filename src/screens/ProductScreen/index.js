@@ -33,6 +33,7 @@ import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import ProductInfo from './ProductInfo';
 import ProductOptions from './ProductOptions';
 import OptionPicker from './OptionPicker';
+import QuantityPicker from './QuantityPicker';
 import TimePicker from './TimePicker';
 
 const ProductScreen = inject('shop')(
@@ -43,6 +44,7 @@ const ProductScreen = inject('shop')(
     const [pickerName, setPickerName] = React.useState(null);
     const [pickerOptions, setPickerOptions] = React.useState([]);
     const slideY = React.useRef(new Animated.Value(0)).current;
+    const slideYQuantity = React.useRef(new Animated.Value(0)).current;
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [specialInstructions, setSpecialInstructions] = useState('');
@@ -101,8 +103,24 @@ const ProductScreen = inject('shop')(
       }).start();
     };
 
+    const showQuantity = () => {
+      Animated.timing(slideYQuantity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    };
+
     const slideDown = () => {
       Animated.timing(slideY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    const slideDownQuantity = () => {
+      Animated.timing(slideYQuantity, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
@@ -189,6 +207,7 @@ const ProductScreen = inject('shop')(
               style={{
                 paddingHorizontal: SIZES.padding * 2,
                 paddingVertical: SIZES.padding,
+                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: SIZES.width,
@@ -203,10 +222,36 @@ const ProductScreen = inject('shop')(
                 elevation: 1,
               }}
             >
+            <TouchableOpacity
+                style={{
+                  // backgroundColor: COLORS.primary,
+                  // width: '100%',
+                  marginRight: 10,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                  paddingHorizontal: 10,
+                  ...styles.shadow,
+                  borderColor: COLORS.primary,
+                  borderWidth: 1,
+                  borderRadius: SIZES.radius * 2,
+                }}
+                onPress={() => {
+                  showQuantity()
+                }}
+              >
+                <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
+                  {(shop.selectionStore.selections
+                      ?.get(product.id)
+                      .quantity || 1)}x
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={{
                   backgroundColor: COLORS.primary,
-                  width: '100%',
+                  // width: '100%',
+                  flexGrow: 1,
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -256,7 +301,8 @@ const ProductScreen = inject('shop')(
                       0) &&
                     shop.selectionStore.selections
                       ?.get(product.id)
-                      .subTotal.toFixed(2)) ||
+                      .subTotal.toFixed(2) * shop.selectionStore.selections
+                      ?.get(product.id).quantity) ||
                     '---'}
                 </Text>
               </TouchableOpacity>
@@ -268,6 +314,15 @@ const ProductScreen = inject('shop')(
               slideDown={slideDown}
               pickerName={pickerName}
               pickerOptions={pickerOptions}
+              // selectedOptions={selectedOptions}
+              // setSelectedOptions={setSelectedOptions}
+            />
+            <QuantityPicker
+              product={product}
+              slideY={slideYQuantity}
+              slideDown={slideDownQuantity}
+              // pickerName={pickerName}
+              // pickerOptions={pickerOptions}
               // selectedOptions={selectedOptions}
               // setSelectedOptions={setSelectedOptions}
             />

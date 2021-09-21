@@ -34,6 +34,8 @@ const CheckoutScreen = inject('shop')(
       phone: shop.user.phone || '',
     });
 
+    const [processing, setProcessing] = React.useState(false);
+
     // React.useEffect(() => {
     //   // check if user is logged in
 
@@ -47,41 +49,55 @@ const CheckoutScreen = inject('shop')(
 
     // })
 
-    const createOrder = () => {
-      if (currentUser.firstName === '') {
-        console.log('missing first name');
-        ShopToast('Please enter a first name.');
-      } else if (currentUser.lastName === '') {
-        console.log('missing last name');
-        ShopToast('Please enter a last name.');
-      } else if (currentUser.email === '') {
-        console.log('missing email');
-        ShopToast('Please enter an email address.');
-      } else if (currentUser.phone === '') {
-        console.log('missing phone');
-        ShopToast('Please enter a phone number.');
-      } else if (!validateEmail(currentUser.email)) {
-        // not a valid email
-        console.log('email not valid');
-        ShopToast('Email address not valid. Please enter a valid email.');
-      } else if (!validatePhone(currentUser.phone)) {
-        // not a valid phone number
-        console.log('phone not valid');
-        ShopToast('Phone number not valid. Please enter a valid phone number.');
+    const createOrder = (e) => {
+      if (processing) {
+        e.preventDefault;
       } else {
-        // passes validation
-        shop.userStore.updateUser(currentUser);
-        shop.cart
-          .checkout()
-          .then((response) => {
-            // If order was successful
-            navigation.navigate('Confirmation');
-          })
-          .catch((error) => {
-            ShopToast(
-              'There was an error with the order. Please try again later.'
-            );
-          });
+        if (currentUser.firstName === '') {
+          console.log('missing first name');
+          ShopToast('Please enter a first name.');
+        } else if (currentUser.lastName === '') {
+          console.log('missing last name');
+          ShopToast('Please enter a last name.');
+        } else if (currentUser.email === '') {
+          console.log('missing email');
+          ShopToast('Please enter an email address.');
+        } else if (currentUser.phone === '') {
+          console.log('missing phone');
+          ShopToast('Please enter a phone number.');
+        } else if (!validateEmail(currentUser.email)) {
+          // not a valid email
+          console.log('email not valid');
+          ShopToast('Email address not valid. Please enter a valid email.');
+        } else if (!validatePhone(currentUser.phone)) {
+          // not a valid phone number
+          console.log('phone not valid');
+          ShopToast(
+            'Phone number not valid. Please enter a valid phone number.'
+          );
+        } else {
+          // passes validation
+          setProcessing(true);
+
+          // setTimeout(() => {
+          //   setProcessing(false);
+          // }, 3000);
+
+          shop.userStore.updateUser(currentUser);
+          shop.cart
+            .checkout()
+            .then((response) => {
+              // If order was successful
+              setProcessing(false);
+              navigation.navigate('Confirmation');
+            })
+            .catch((error) => {
+              setProcessing(false);
+              ShopToast(
+                'There was an error with the order. Please try again later.'
+              );
+            });
+        }
       }
     };
 
@@ -164,7 +180,7 @@ const CheckoutScreen = inject('shop')(
               <Text
                 style={{
                   ...FONTS.h3,
-                  paddingVertical: 20
+                  paddingVertical: 20,
                 }}
               >
                 No Items in Cart
@@ -229,7 +245,10 @@ const CheckoutScreen = inject('shop')(
                   ) : (
                     <Text>
                       Have an account?{' '}
-                      <Text style={{fontWeight: 'bold'}} onPress={() => navigation.navigate('Login')}>
+                      <Text
+                        style={{ fontWeight: 'bold' }}
+                        onPress={() => navigation.navigate('Login')}
+                      >
                         Click Here to log in
                       </Text>
                     </Text>
@@ -319,7 +338,7 @@ const CheckoutScreen = inject('shop')(
               >
                 <TouchableOpacity
                   style={{
-                    backgroundColor: COLORS.primary,
+                    backgroundColor: processing ? '#777' : COLORS.primary,
                     width: '100%',
                     flexDirection: 'row',
                     justifyContent: 'center',
@@ -329,20 +348,16 @@ const CheckoutScreen = inject('shop')(
                     ...styles.shadow,
                     borderRadius: SIZES.radius * 2,
                   }}
+                  disabled={processing}
                   onPress={createOrder}
                 >
-                {
-                  // If order is already processing, prevent press
-
-                  // Else, if order is ready, begin processing
-                }
                   <Text
                     style={{
                       color: COLORS.white,
                       ...FONTS.h3,
                     }}
                   >
-                    Submit
+                    {processing ? 'Processing...' : 'Submit'}
                   </Text>
                   <Ionicons
                     name='arrow-forward'

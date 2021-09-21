@@ -28,6 +28,7 @@ export const Selection = types
     type: types.string,
     options: types.array(Option),
     price: types.number,
+    quantity: types.optional(types.number, 1),
     isAvailable: false,
   })
   .views((self) => ({
@@ -79,6 +80,7 @@ export const SelectionStore = types
 
     function clearSelections(product) {
       self.selections.get(product.id).options = [];
+      self.selections.get(product.id).quantity = 1
     }
 
     function addOption(product, option) {
@@ -107,6 +109,10 @@ export const SelectionStore = types
         .options.filter((e) => e.name === option.name)[0]
         .value.push({ name: item.name, qty: 1, price: item.price });
       // console.log(self.selections.get(product.id));
+    }
+
+    function updateQuantity(product, n) {
+      self.selections.get(product.id).quantity = n;
     }
 
     function increaseQty(product, option, item) {
@@ -152,6 +158,7 @@ export const SelectionStore = types
       updateSelections,
       addOptionItem,
       removeOptionItem,
+      updateQuantity,
       increaseQty,
       decreaseQty,
     };

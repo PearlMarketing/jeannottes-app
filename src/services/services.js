@@ -70,23 +70,23 @@ class Service {
     }
 
     TokenValidate(token = null) {
-        return axios.post(`/jwt-auth/v1/token/validate`, token, {headers: {'Authorization': token !== null ? `Bearer ${token}` : null}})
+        return axios.post(`/wp-json/jwt-auth/v1/token/validate`, token, {headers: {'Authorization': token !== null ? `Bearer ${token}` : null}})
     }
 
     PushToken(data, token) {
-        return axios.post('/app/register-user-token', data, {headers: {'Authorization': token !== null ? `Bearer ${token}` : null}})
+        return axios.post('/wp-json/app/register-user-token', data, {headers: {'Authorization': token !== null ? `Bearer ${token}` : null}})
     }
 
     ResetPassword(data) {
-        return axios.post('/bdpwr/v1/reset-password', data)
+        return axios.post('/wp-json/bdpwr/v1/reset-password', data)
     }
 
     SetPassword(data) {
-        return axios.post('/bdpwr/v1/set-password', data)
+        return axios.post('/wp-json/bdpwr/v1/set-password', data)
     }
 
     ValidateCode(data) {
-        return axios.post('/bdpwr/v1/validate-code', data)
+        return axios.post('/wp-json/bdpwr/v1/validate-code', data)
     }
 }
 

@@ -69,6 +69,7 @@ const CartScreen = inject('shop')(
           <View style={{ flexShrink: 1 }}>
             <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
             <View>
+              <Text key={i}>Quantity: {item.quantity}</Text>
               {item.options.map((option, i) => (
                 <Text key={i}>
                   {option.name}:{' '}

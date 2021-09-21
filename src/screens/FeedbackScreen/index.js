@@ -14,6 +14,8 @@ import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
+import * as Linking from 'expo-linking';
 // import { isIphoneX } from 'react-native-iphone-x-helper';
 import Header from '../../components/Header';
 import Loader from '../../components/Loader';
@@ -53,14 +55,12 @@ const FeedbackScreen = inject('shop')(
           const testData = {
             email: 'culverlau@gmail.com',
             message: 'This is a test',
-          }
+          };
           console.log(feedbackData);
           // const response = await Service.CreateCustomer(customerData);
           // console.log(response);
 
-          ShopToast(
-            'Thank you, feedback was successfully sent.'
-          );
+          ShopToast('Thank you, feedback was successfully sent.');
           setCurrentUser({
             email: '',
             message: '',
@@ -101,15 +101,37 @@ const FeedbackScreen = inject('shop')(
         <Loader />
       ) : ( */}
         <>
-          <ScrollView
+          <View
             style={{
               backgroundColor: COLORS.white,
               width: SIZES.width,
               paddingHorizontal: SIZES.padding * 2,
+              // paddingHorizontal: SIZES.padding * 2,
+              paddingVertical: SIZES.padding,
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: SIZES.width,
+              backgroundColor: 'white',
+              flex: 1,
             }}
           >
+            <Text
+              style={{
+                ...FONTS.h3,
+                textAlign: 'center'
+              }}
+            >
+              For all feedback and questions, or to report a bug, please contact{' '}
+              <Text
+                onPress={() =>
+                  Linking.openURL('mailto:info@pearlmarketing.com')
+                }
+              >
+                info@pearlmarketing.com
+              </Text>
+            </Text>
             {/* Checkout Fields */}
-            <View
+            {/* <View
               style={{
                 // width: SIZES.width,
                 marginVertical: 8,
@@ -143,11 +165,11 @@ const FeedbackScreen = inject('shop')(
                 numberOfLines={4}
                 minHeight={100}
               />
-            </View>
+            </View> */}
 
             {/* //! Don't allow ordering until all fields are filled out */}
             {/* Submit Button */}
-            <View
+            {/* <View
               style={{
                 paddingVertical: SIZES.padding,
                 alignItems: 'center',
@@ -188,8 +210,8 @@ const FeedbackScreen = inject('shop')(
                   size={26}
                 />
               </TouchableOpacity>
-            </View>
-          </ScrollView>
+            </View> */}
+          </View>
         </>
         {/* )} */}
       </SafeAreaView>

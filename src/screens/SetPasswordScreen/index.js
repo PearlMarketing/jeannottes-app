@@ -9,7 +9,6 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
-import secureStore from '../../services/secureStore';
 import { Input } from 'react-native-elements';
 import { observer, inject } from 'mobx-react';
 import { useIsFocused } from '@react-navigation/native';
@@ -20,49 +19,83 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
+import { validateEmail, validatePhone } from '../../services/helpers';
+
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
 
-const LogInScreen = inject('shop')(
+const SetPasswordScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
     const [currentUser, setCurrentUser] = React.useState({
       email: '',
+      code: '',
       password: '',
+      confirmPassword: '',
     });
 
     const [processing, setProcessing] = React.useState(false);
 
-    const loginUser = async (e) => {
+    React.useEffect(() => {
+      let { email } = route.params;
+      setCurrentUser({
+        ...currentUser,
+        email: email,
+      });
+    }, []);
+
+    const setPassword = async (e) => {
       if (processing) {
         e.preventDefault;
       } else {
-        try {
+        if (currentUser.email === '') {
+          console.log('missing email');
+          ShopToast('Please enter an email address.');
+        } else if (!validateEmail(currentUser.email)) {
+          // not a valid email
+          console.log('email not valid');
+          ShopToast('Email address not valid. Please enter a valid email.');
+        } else if (currentUser.code === '') {
+          console.log('missing code');
+          ShopToast('Please enter verification code sent to your email address.');
+        } else if (currentUser.password === '') {
+          console.log('missing password');
+          ShopToast('Please enter a password.');
+        } else if (currentUser.confirmPassword === '') {
+          console.log('missing confirm password');
+          ShopToast('Please confirm password.');
+        } else if (currentUser.confirmPassword !== currentUser.password) {
+          console.log('passwords do not match');
+          ShopToast('Passwords do not match.');
+        } else {
           setProcessing(true);
-          const { data: auth } = await Service.SetToken({
-            username: currentUser.username,
-            password: currentUser.password,
-          });
-          // console.log(auth);
-          if (auth.success === true) {
-            try {
-              await secureStore.save('token', JSON.stringify(auth.data));
-              await shop.userStore.loadUser();
-              // console.log(shop.user);
-              ShopToast('Successfully Logged In to ' + shop.user.nicename);
+          try {
+            // passes validation
+            // console.log(currentUser);
+            const response = await Service.SetPassword(currentUser);
+            // console.log(response);
+
+            if (response.data.data.status === 200) {
               setProcessing(false);
+              // setCurrentUser({
+              //   email: ''
+              // });
+              ShopToast(response.data.message);
               navigation.navigate('Account');
-            } catch (err) {
+            } else {
               setProcessing(false);
-              ShopToast('An error occured while logging in. Please try again');
+              // console.error(
+              //   response.data.data.status + ': ' + response.data.message
+              // );
+              ShopToast(
+                response.data.data.status + ': ' + response.data.message
+              );
             }
-          } else {
+          } catch (e) {
             setProcessing(false);
-            ShopToast(auth.message);
+            console.log(e.response.data.message);
+            ShopToast(e.response.data.message);
           }
-        } catch (e) {
-          setProcessing(false)
-          ShopToast(e.response.data.message);
         }
       }
     };
@@ -88,7 +121,12 @@ const LogInScreen = inject('shop')(
         edges={['top', 'right', 'bottom', 'left']}
       >
         <FocusAwareStatusBar barStyle='dark-content' />
-        <Header route={route} navigation={navigation} dark title='Log In' />
+        <Header
+          route={route}
+          navigation={navigation}
+          dark
+          title='Set Password'
+        />
         <>
           <ScrollView
             style={{
@@ -97,6 +135,18 @@ const LogInScreen = inject('shop')(
               paddingHorizontal: SIZES.padding * 2,
             }}
           >
+            <View
+              style={{
+                // width: SIZES.width,
+                marginVertical: 8,
+                // paddingHorizontal: SIZES.padding * 2,
+              }}
+            >
+              <Text>
+                Type in a new password, along with the verification code sent to
+                your email address
+              </Text>
+            </View>
             {/* Checkout Fields */}
             <View
               style={{
@@ -107,18 +157,33 @@ const LogInScreen = inject('shop')(
             >
               {/* Email Address */}
               <StyledTextInput
-                placeholder='Enter Username or Email Address'
-                label='Username or Email Address'
+                placeholder='Enter Email Address'
+                label='Email Address'
                 onChangeText={(value) =>
                   setCurrentUser({
                     ...currentUser,
-                    username: value,
+                    email: value,
                   })
                 }
-                value={currentUser.username}
-                textContentType='username'
-                autoCompleteType='username'
+                value={currentUser.email}
+                textContentType='emailAddress'
+                autoCompleteType='email'
+                keyboardType='email-address'
                 autoCapitalize='none'
+              />
+              {/* Code */}
+              <StyledTextInput
+                placeholder='Enter Verification Code'
+                label='Verification Code'
+                onChangeText={(value) =>
+                  setCurrentUser({
+                    ...currentUser,
+                    code: value,
+                  })
+                }
+                value={currentUser.code}
+                // textContentType='code'
+                // autoCapitalize='none'
               />
               {/* Password */}
               <StyledTextInput
@@ -131,15 +196,29 @@ const LogInScreen = inject('shop')(
                   })
                 }
                 value={currentUser.password}
-                textContentType='password'
+                textContentType='newPassword'
                 autoCompleteType='password'
+                secureTextEntry
+                autoCapitalize='none'
+              />
+              {/* Repeat Password */}
+              <StyledTextInput
+                placeholder='Confirm Password'
+                label='Confirm Password'
+                onChangeText={(value) =>
+                  setCurrentUser({
+                    ...currentUser,
+                    confirmPassword: value,
+                  })
+                }
+                value={currentUser.confirmPassword}
                 secureTextEntry
                 autoCapitalize='none'
               />
             </View>
 
             {/* //! Don't allow button until all fields are filled out */}
-            {/* Login Button */}
+            {/* Set Password Button */}
             <View
               style={{
                 paddingVertical: SIZES.padding,
@@ -161,7 +240,7 @@ const LogInScreen = inject('shop')(
                   borderRadius: SIZES.radius * 2,
                 }}
                 disabled={processing}
-                onPress={loginUser}
+                onPress={setPassword}
               >
                 <Text
                   style={{
@@ -169,7 +248,7 @@ const LogInScreen = inject('shop')(
                     ...FONTS.h3,
                   }}
                 >
-                  {processing ? 'Processing...' : 'Log In'}
+                  {processing ? 'Processing...' : 'Set Password'}
                 </Text>
                 <Ionicons
                   name='arrow-forward'
@@ -182,30 +261,6 @@ const LogInScreen = inject('shop')(
                   size={26}
                 />
               </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                paddingVertical: SIZES.padding,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'white',
-              }}
-            >
-              <Text onPress={() => navigation.navigate('Register')}>
-                Don't have an account? Register Here.
-              </Text>
-            </View>
-            <View
-              style={{
-                paddingVertical: SIZES.padding,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'white',
-              }}
-            >
-              <Text onPress={() => navigation.navigate('Reset Password')}>
-                Forgot Password? Reset Your Password Here.
-              </Text>
             </View>
           </ScrollView>
         </>
@@ -235,4 +290,4 @@ const styles = StyleSheet.create({
   select: {},
 });
 
-export default LogInScreen;
+export default SetPasswordScreen;

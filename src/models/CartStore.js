@@ -23,6 +23,7 @@ const CartEntry = types
     product: types.number,
     name: types.string,
     type: types.string,
+    quantity: types.number,
     options: types.array(Option),
     // options: types.array(
     //   types.model({
@@ -56,7 +57,7 @@ const CartEntry = types
           (addon += e.value.reduce((sum, e) => sum + e.price * e.qty, 0));
         return sum + addon;
       }, 0);
-      return size + extras;
+      return (size + extras) * self.quantity;
     },
     get tax() {
       return self.subTotal * 0.09;
@@ -288,7 +289,7 @@ export const CartStore = types
                   price: value.price,
                   section: '',
                   // TODO: add conditional for quantity items
-                  quantity: 1,
+                  quantity: value.qty,
                 };
 
                 // console.log(option);
@@ -317,7 +318,7 @@ export const CartStore = types
         let entryData = {
           product_id: entry.product,
           variation_id: entry.options.filter((e) => e.name === 'Size')[0].id,
-          quantity: 1,
+          quantity: entry.quantity,
           // calculate subtotal for each item
           subtotal: entry.subTotal.toString(),
           total: entry.subTotal.toString(),

@@ -51,7 +51,7 @@ const MoreScreen = inject('shop')(
         <Loader />
       ) : ( */}
         <>
-          <ScrollView
+          <View
             style={{
               backgroundColor: COLORS.white,
               width: SIZES.width,
@@ -94,7 +94,7 @@ const MoreScreen = inject('shop')(
               </View>
             </TouchableOpacity>
             <RenderSeparator />
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.item}
               onPress={() => {
                 navigation.navigate('Feedback');
@@ -126,8 +126,8 @@ const MoreScreen = inject('shop')(
                 </Text>
               </View>
             </TouchableOpacity>
-            <RenderSeparator />
-          </ScrollView>
+            <RenderSeparator /> */}
+          </View>
         </>
         {/* )} */}
       </SafeAreaView>

@@ -37,104 +37,117 @@ const RegistrationScreen = inject('shop')(
       confirmPassword: '',
     });
 
-    const createCustomer = async () => {
-      if (currentUser.firstName === '') {
-        console.log('missing first name');
-        ShopToast('Please enter a first name.');
-      } else if (currentUser.lastName === '') {
-        console.log('missing last name');
-        ShopToast('Please enter a last name.');
-      } else if (currentUser.email === '') {
-        console.log('missing email');
-        ShopToast('Please enter an email address.');
-      } else if (currentUser.phone === '') {
-        console.log('missing phone');
-        ShopToast('Please enter a phone number.');
-      } else if (currentUser.username === '') {
-        console.log('missing username');
-        ShopToast('Please enter a username.');
-      } else if (currentUser.password === '') {
-        console.log('missing password');
-        ShopToast('Please enter a password.');
-      } else if (currentUser.confirmPassword === '') {
-        console.log('missing confirm password');
-        ShopToast('Please confirm password.');
-      } else if (currentUser.confirmPassword !== currentUser.password) {
-        console.log('passwords do not match');
-        ShopToast('Passwords do not match.');
-      } else if (!validateEmail(currentUser.email)) {
-        // not a valid email
-        console.log('email not valid');
-        ShopToast('Email address not valid. Please enter a valid email.');
-      } else if (!validatePhone(currentUser.phone)) {
-        // not a valid phone number
-        console.log('phone not valid');
-        ShopToast('Phone number not valid. Please enter a valid phone number.');
+    const [processing, setProcessing] = React.useState(false);
+
+    const createCustomer = async (e) => {
+      if (processing) {
+        e.preventDefault;
       } else {
-        try {
-          // passes validation
-          const customerData = {
-            username: currentUser.username,
-            password: currentUser.password,
-            first_name: currentUser.firstName,
-            last_name: currentUser.lastName,
-            email: currentUser.email,
-            billing: {
+        if (currentUser.firstName === '') {
+          console.log('missing first name');
+          ShopToast('Please enter a first name.');
+        } else if (currentUser.lastName === '') {
+          console.log('missing last name');
+          ShopToast('Please enter a last name.');
+        } else if (currentUser.email === '') {
+          console.log('missing email');
+          ShopToast('Please enter an email address.');
+        } else if (currentUser.phone === '') {
+          console.log('missing phone');
+          ShopToast('Please enter a phone number.');
+        } else if (currentUser.username === '') {
+          console.log('missing username');
+          ShopToast('Please enter a username.');
+        } else if (currentUser.password === '') {
+          console.log('missing password');
+          ShopToast('Please enter a password.');
+        } else if (currentUser.confirmPassword === '') {
+          console.log('missing confirm password');
+          ShopToast('Please confirm password.');
+        } else if (currentUser.confirmPassword !== currentUser.password) {
+          console.log('passwords do not match');
+          ShopToast('Passwords do not match.');
+        } else if (!validateEmail(currentUser.email)) {
+          // not a valid email
+          console.log('email not valid');
+          ShopToast('Email address not valid. Please enter a valid email.');
+        } else if (!validatePhone(currentUser.phone)) {
+          // not a valid phone number
+          console.log('phone not valid');
+          ShopToast(
+            'Phone number not valid. Please enter a valid phone number.'
+          );
+        } else {
+          setProcessing(true);
+          try {
+            // passes validation
+            const customerData = {
+              username: currentUser.username,
+              password: currentUser.password,
               first_name: currentUser.firstName,
               last_name: currentUser.lastName,
-              company: '',
-              address_1: '',
-              address_2: '',
-              city: '',
-              state: '',
-              postcode: '',
-              country: '',
-              phone: currentUser.phone,
               email: currentUser.email,
-            },
-          };
-          const testData = {
-            email: 'culverlauphotography@gmail.com',
-            first_name: 'Culver',
-            last_name: 'Lau',
-            username: 'culvertest',
-            password: 'test',
-            billing: {
+              billing: {
+                first_name: currentUser.firstName,
+                last_name: currentUser.lastName,
+                company: '',
+                address_1: '',
+                address_2: '',
+                city: '',
+                state: '',
+                postcode: '',
+                country: '',
+                phone: currentUser.phone,
+                email: currentUser.email,
+              },
+            };
+            const testData = {
+              email: 'culverlauphotography@gmail.com',
               first_name: 'Culver',
               last_name: 'Lau',
-              company: '',
-              address_1: '',
-              address_2: '',
-              city: '',
-              state: '',
-              postcode: '',
-              country: '',
-              phone: '4552134839',
-              email: 'culverlauphotography@gmail.com',
-            },
-          };
-          console.log(customerData);
-          const response = await Service.CreateCustomer(customerData);
-          console.log(response);
+              username: 'culvertest',
+              password: 'test',
+              billing: {
+                first_name: 'Culver',
+                last_name: 'Lau',
+                company: '',
+                address_1: '',
+                address_2: '',
+                city: '',
+                state: '',
+                postcode: '',
+                country: '',
+                phone: '4552134839',
+                email: 'culverlauphotography@gmail.com',
+              },
+            };
+            console.log(customerData);
+            const response = await Service.CreateCustomer(customerData);
+            console.log(response);
 
-          ShopToast(
-            'Successfully Created Account for ' + currentUser.email + '. Please log in.'
-          );
-          setCurrentUser({
-            firstName: '',
-            lastName: '',
-            username: '',
-            email: '',
-            phone: '',
-            password: '',
-            confirmPassword: '',
-          });
-          navigation.navigate('Account');
-        } catch (error) {
-          ShopToast(
-            'An error occured while creating account. Please try again.'
-          );
-          console.error('Failed to post order ', error);
+            ShopToast(
+              'Successfully Created Account for ' +
+                currentUser.email +
+                '. Please log in.'
+            );
+            setProcessing(false);
+            setCurrentUser({
+              firstName: '',
+              lastName: '',
+              username: '',
+              email: '',
+              phone: '',
+              password: '',
+              confirmPassword: '',
+            });
+            navigation.navigate('Account');
+          } catch (error) {
+            ShopToast(
+              'An error occured while creating account. Please try again.'
+            );
+            setProcessing(false);
+            console.error('Failed to post order ', error);
+          }
         }
       }
     };
@@ -292,7 +305,7 @@ const RegistrationScreen = inject('shop')(
             >
               <TouchableOpacity
                 style={{
-                  backgroundColor: COLORS.primary,
+                  backgroundColor: processing ? '#777' : COLORS.primary,
                   width: '100%',
                   flexDirection: 'row',
                   justifyContent: 'center',
@@ -302,6 +315,7 @@ const RegistrationScreen = inject('shop')(
                   ...styles.shadow,
                   borderRadius: SIZES.radius * 2,
                 }}
+                disabled={processing}
                 onPress={createCustomer}
               >
                 <Text
@@ -310,7 +324,7 @@ const RegistrationScreen = inject('shop')(
                     ...FONTS.h3,
                   }}
                 >
-                  Register
+                  {processing ? 'Processing...' : 'Register'}
                 </Text>
                 <Ionicons
                   name='arrow-forward'
