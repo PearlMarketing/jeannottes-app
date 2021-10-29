@@ -1,9 +1,10 @@
 import React from 'react';
-import {  ActivityIndicator, View, Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
 
 import { SIZES, COLORS } from '../constants';
 
+// A styled text input for consistency among all text inputs throughout the app
 const StyledTextInput = (props) => (
   <TextInput
     style={{
@@ -16,9 +17,9 @@ const StyledTextInput = (props) => (
     mode='outlined'
     {...props}
   />
-);;
+);
 
-export default StyledTextInput
+export default StyledTextInput;
 
 const styles = StyleSheet.create({
   container: {

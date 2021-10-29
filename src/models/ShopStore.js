@@ -3,7 +3,6 @@ import { ProductStore } from './ProductStore';
 import { OptionStore } from './OptionStore';
 import { VariationStore } from './VariationStore';
 import { CartStore } from './CartStore';
-import { ViewStore } from './ViewStore';
 import { SelectionStore } from './SelectionStore';
 import { UserStore } from './UserStore';
 
@@ -27,7 +26,6 @@ export const ShopStore = types
     userStore: types.optional(UserStore, {
       user: {}
     }),
-    view: types.optional(ViewStore, {}),
   })
   .views((self) => ({
     get fetch() {
@@ -78,5 +76,6 @@ export const ShopStore = types
       self.productStore.loadProducts();
       self.optionStore.loadOptions();
       self.userStore.loadUser();
+      self.cart.loadTax();
     },
   }));

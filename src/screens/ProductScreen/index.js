@@ -133,10 +133,7 @@ const ProductScreen = inject('shop')(
     }
 
     return (
-      <SafeAreaView
-        style={styles.container}
-        edges={['right', 'left']}
-      >
+      <SafeAreaView style={styles.container} edges={['right', 'left']}>
         <FocusAwareStatusBar barStyle='light-content' />
         <Header route={route} navigation={navigation} transparent />
         {!product?.id ? (
@@ -152,57 +149,66 @@ const ProductScreen = inject('shop')(
                 }}
               >
                 <ProductInfo product={product} />
-                <ProductOptions
-                  item={
-                    shop.availableVariations.filter(
-                      (e) => e.id === product.id
-                    )[0]
-                  }
-                  product={product}
-                  // selectedOptions={selectedOptions}
-                  // setSelectedOptions={setSelectedOptions}
-                  showOptions={showOptions}
-                />
-                {shop.availableOptions.map((item) => (
-                  <ProductOptions
-                    key={item.id}
-                    item={item}
-                    product={product}
-                    // selectedOptions={selectedOptions}
-                    // setSelectedOptions={setSelectedOptions}
-                    showOptions={showOptions}
-                    navigation={navigation}
-                  />
-                ))}
 
-                {/* Time Picker */}
-                <TimePicker
-                  product={product}
-                  title='Pickup Time (Optional)'
-                  onPress={showDatePicker}
-                />
-                <DateTimePickerModal
-                  isVisible={isDatePickerVisible}
-                  mode='time'
-                  onConfirm={handleConfirm}
-                  onCancel={hideDatePicker}
-                />
+                {product?.purchasable ? (
+                  <>
+                    <ProductOptions
+                      item={
+                        shop.availableVariations.filter(
+                          (e) => e.id === product.id
+                        )[0]
+                      }
+                      product={product}
+                      // selectedOptions={selectedOptions}
+                      // setSelectedOptions={setSelectedOptions}
+                      showOptions={showOptions}
+                    />
+                    {shop.availableOptions.map((item) => (
+                      <ProductOptions
+                        key={item.id}
+                        item={item}
+                        product={product}
+                        // selectedOptions={selectedOptions}
+                        // setSelectedOptions={setSelectedOptions}
+                        showOptions={showOptions}
+                        navigation={navigation}
+                      />
+                    ))}
 
-                <View
-                  style={{
-                    width: SIZES.width,
-                    paddingHorizontal: SIZES.padding * 2,
-                  }}
-                >
-                  <StyledTextInput
-                    label='Special Instructions'
-                    onChangeText={setSpecialInstructions}
-                  />
-                </View>
+                    {/* Time Picker */}
+                    <TimePicker
+                      product={product}
+                      title='Pickup Time (Optional)'
+                      onPress={showDatePicker}
+                    />
+                    <DateTimePickerModal
+                      isVisible={isDatePickerVisible}
+                      mode='time'
+                      onConfirm={handleConfirm}
+                      onCancel={hideDatePicker}
+                    />
+
+                    <View
+                      style={{
+                        width: SIZES.width,
+                        paddingHorizontal: SIZES.padding * 2,
+                      }}
+                    >
+                      <StyledTextInput
+                        label='Special Instructions'
+                        onChangeText={setSpecialInstructions}
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <Text>
+                    This product is not available for purchase right now
+                  </Text>
+                )}
               </View>
             </KeyboardAwareScrollView>
 
-            {/* Order Button */}
+            {/* Bottom Order Button Bar */}
             <View
               style={{
                 paddingHorizontal: SIZES.padding * 2,
@@ -222,34 +228,40 @@ const ProductScreen = inject('shop')(
                 elevation: 1,
               }}
             >
-            <TouchableOpacity
-                style={{
-                  // backgroundColor: COLORS.primary,
-                  // width: '100%',
-                  marginRight: 10,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  paddingHorizontal: 10,
-                  ...styles.shadow,
-                  borderColor: COLORS.primary,
-                  borderWidth: 1,
-                  borderRadius: SIZES.radius * 2,
-                }}
-                onPress={() => {
-                  showQuantity()
-                }}
-              >
-                <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
-                  {(shop.selectionStore.selections
-                      ?.get(product.id)
-                      .quantity || 1)}x
-                </Text>
-              </TouchableOpacity>
+              {product?.purchasable && (
+                <TouchableOpacity
+                  style={{
+                    // backgroundColor: COLORS.primary,
+                    // width: '100%',
+                    marginRight: 10,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    backgroundColor: 'white',
+                    paddingVertical: 10,
+                    paddingHorizontal: 10,
+                    ...styles.shadow,
+                    borderColor: COLORS.primary,
+                    borderWidth: 1,
+                    borderRadius: SIZES.radius * 2,
+                  }}
+                  onPress={() => {
+                    showQuantity();
+                  }}
+                >
+                  <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
+                    {shop.selectionStore.selections?.get(product.id).quantity ||
+                      1}
+                    x
+                  </Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
+                disabled={!product.purchasable}
                 style={{
-                  backgroundColor: COLORS.primary,
+                  backgroundColor: product.purchasable
+                    ? COLORS.primary
+                    : '#777',
                   // width: '100%',
                   flexGrow: 1,
                   flexDirection: 'row',
@@ -280,31 +292,40 @@ const ProductScreen = inject('shop')(
                       shop.selectionStore.selections.get(product.id)
                     );
                     shop.selectionStore.clearSelections(product);
-                    ShopToast(product.name + ' added to cart!', navigation);
+                    ShopToast(product.name + ' added to cart!');
                     navigation.navigate('Shop');
                   } else {
                     ShopToast('Please select Size');
                   }
                 }}
               >
-                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
-                  Add To Order
-                </Text>
-                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
-                  $
-                  {(shop.selectionStore.selections
-                    ?.get(product.id)
-                    .options.filter((e) => e.name === 'Size').length &
-                    (shop.selectionStore.selections
-                      ?.get(product.id)
-                      .subTotal.toFixed(2) >
-                      0) &&
-                    shop.selectionStore.selections
-                      ?.get(product.id)
-                      .subTotal.toFixed(2) * shop.selectionStore.selections
-                      ?.get(product.id).quantity) ||
-                    '---'}
-                </Text>
+                {product.purchasable ? (
+                  <>
+                    <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                      Add To Order
+                    </Text>
+                    <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                      $
+                      {(shop.selectionStore.selections
+                        ?.get(product.id)
+                        .options.filter((e) => e.name === 'Size').length &
+                        (shop.selectionStore.selections
+                          ?.get(product.id)
+                          .subTotal.toFixed(2) >
+                          0) &&
+                        shop.selectionStore.selections
+                          ?.get(product.id)
+                          .subTotal.toFixed(2) *
+                          shop.selectionStore.selections?.get(product.id)
+                            .quantity) ||
+                        '---'}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                    Currently Unavailable
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
 

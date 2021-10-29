@@ -25,6 +25,7 @@ export const Product = types.model('Product', {
     })
   ),
   variations: types.array(types.number),
+  purchasable: types.boolean,
   isAvailable: true,
   loadedVariations: false,
 });
@@ -54,6 +55,7 @@ export const ProductStore = types
       self.products.get(productId).loadedVariations = result;
     }
 
+    // Runs after loadOptions is finished fetching data from website API
     function updateProducts(response) {
       values(self.products).forEach((product) => (product.isAvailable = false));
       response.forEach((productData) => {
@@ -62,13 +64,13 @@ export const ProductStore = types
       });
     }
 
+    // Loads products from Wordpress website
     const loadProducts = flow(function* loadProducts() {
       try {
         const response = yield Service.Products(`category=22&per_page=50`);
         const productsData = response.data
           .filter((item) => item.status === 'publish')
           .map((product) => {
-            // self.shop.variationStore.loadVariations(product);
             return {
               ...product,
               short_description: replaceHTML(product.short_description),

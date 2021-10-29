@@ -51,6 +51,10 @@ class Service {
         return wc_api.get(`/customers/${id}`)
     }
 
+    Tax(id) {
+      return wc_api.get(`/taxes/${id}`)
+    }
+
     // Other
     Pages(params) {
         return axios.get(`/wp/v2/pages/?${params}`)
@@ -66,7 +70,6 @@ class Service {
 
     SetToken(data) {
         return axios.post(`/wp-json/jwt-auth/v1/token`, data)
-        // return axios.post(`/jwt-auth/v1/token`, data)
     }
 
     TokenValidate(token = null) {

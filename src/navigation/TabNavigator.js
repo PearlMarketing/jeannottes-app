@@ -1,15 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { observer, inject } from 'mobx-react';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ShopNavigator from './ShopNavigator';
 import CartNavigator from './CartNavigator';
 import MoreNavigator from './MoreNavigator';
-import AccountScreen from '../screens/AccountScreen';
-import { Pressable } from 'react-native';
 import FeedbackScreen from '../screens/FeedbackScreen';
 
 const Tab = createBottomTabNavigator();
@@ -27,11 +25,6 @@ const TabNavigator = inject('shop')(
                   name={focused ? 'restaurant' : 'restaurant-outline'}
                   size={size}
                   color={color}
-                  style={
-                    {
-                      // padding:10
-                    }
-                  }
                 />
               );
             } else if (route.name === 'Cart') {
@@ -40,11 +33,6 @@ const TabNavigator = inject('shop')(
                   name={focused ? 'cart' : 'cart-outline'}
                   size={size}
                   color={color}
-                  style={
-                    {
-                      // padding:10
-                    }
-                  }
                 />
               );
             } else if (route.name === 'Account / Reorder') {
@@ -53,63 +41,22 @@ const TabNavigator = inject('shop')(
                   name='reload'
                   size={size}
                   color={color}
-                  style={
-                    {
-                      // padding:10
-                    }
-                  }
                 />
               );
             } else if (route.name === 'Account') {
-              // return (
-              //   <Feather
-              //     name='more-horizontal'
-              //     size={size}
-              //     color={color}
-              //     style={
-              //       {
-              //         // padding:10
-              //       }
-              //     }
-              //   />
-              // );
               return (
                 <Ionicons
-                  // name='person'
                   name={focused ? 'person' : 'person-outline'}
                   size={size}
                   color={color}
-                  style={
-                    {
-                      // padding:10
-                    }
-                  }
                 />
               );
             } else if (route.name === 'Feedback') {
-              // return (
-              //   <Feather
-              //     name='more-horizontal'
-              //     size={size}
-              //     color={color}
-              //     style={
-              //       {
-              //         // padding:10
-              //       }
-              //     }
-              //   />
-              // );
               return (
                 <Ionicons
-                  // name='person'
                   name={focused ? 'help-circle' : 'help-circle-outline'}
                   size={size}
                   color={color}
-                  style={
-                    {
-                      // padding:10
-                    }
-                  }
                 />
               );
             }
@@ -134,9 +81,8 @@ const TabNavigator = inject('shop')(
             unmountOnBlur: true,
           }}
         />
-        <Tab.Screen name='Account / Reorder' component={AccountScreen} />
+        <Tab.Screen name='Account / Reorder' component={MoreNavigator} />
         <Tab.Screen name='Feedback' component={FeedbackScreen} />
-        {/* <Tab.Screen name='Account' component={MoreNavigator} /> */}
       </Tab.Navigator>
     );
   })

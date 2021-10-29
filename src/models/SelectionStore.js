@@ -4,13 +4,14 @@ import { SIZES } from '../constants';
 
 import Service from '../services/services';
 
+// A single selected option type
 export const Option = types.model('Option', {
   id: types.maybe(types.number),
   name: types.string,
   value: types.union(
     types.string,
     types.array(
-      // Add objects with pricing and qty
+      // If the option is not Size, it will use this array model
       types.model({
         name: types.string,
         qty: types.number,
@@ -21,6 +22,7 @@ export const Option = types.model('Option', {
   price: types.optional(types.number, 0),
 });
 
+// A group the selected options for a specific product
 export const Selection = types
   .model('Selection', {
     id: types.identifierNumber,
@@ -62,6 +64,7 @@ export const SelectionStore = types
       self.isLoading = loading;
     }
 
+    // When we first land on a specific product view, if selection has not been initiated yet, initiate selection object
     function addSelection(product) {
       const selectionData = {
         id: product.id,
@@ -73,24 +76,27 @@ export const SelectionStore = types
       updateSelections(selectionData);
     }
 
+    // Run on product selection initiation
     function updateSelections(response) {
       self.selections.put(response);
       self.selections.get(response.id).isAvailable = true;
     }
 
+    // Clears selected options when the product is added tp cart
     function clearSelections(product) {
       self.selections.get(product.id).options = [];
       self.selections.get(product.id).quantity = 1
     }
 
+    // Adds a new option type to a product selection
     function addOption(product, option) {
       if (
-        // Does option exist yet
+        // Checks if selected option type exist yet for that specific product
         self.selections
           .get(product.id)
           .options.filter((e) => e.name === option.name).length > 0
       ) {
-        // If so, then change the value
+        // If it does exist, then change the value
         const optionIndex = self.selections
           .get(product.id)
           .options.findIndex((e) => e.name === option.name);
@@ -98,23 +104,25 @@ export const SelectionStore = types
         updatedOptions[optionIndex] = option;
         self.selections.get(product.id).options = updatedOptions;
       } else {
-        // Add new option to selection
+        // If it does not exist yet, add the new option type to selection group of that specific product
         self.selections.get(product.id).options.push(option);
       }
     }
 
+    // Add a new option item to a option type
     function addOptionItem(product, option, item) {
       self.selections
         .get(product.id)
         .options.filter((e) => e.name === option.name)[0]
         .value.push({ name: item.name, qty: 1, price: item.price });
-      // console.log(self.selections.get(product.id));
     }
 
+    // This changes the quantity of the product in cart (quantity of sandwich)
     function updateQuantity(product, n) {
       self.selections.get(product.id).quantity = n;
     }
 
+    // For option types that have selectable quantity (i.e. extra meats, extra cheeses)
     function increaseQty(product, option, item) {
       self.selections
         .get(product.id)
@@ -122,12 +130,14 @@ export const SelectionStore = types
         .value.filter((e) => e.name === item.name)[0].qty++;
     }
 
+    // For option types that have selectable quantity (i.e. extra meats, extra cheeses)
     function decreaseQty(product, option, item) {
       self.selections
         .get(product.id)
         .options.filter((e) => e.name === option.name)[0]
         .value.filter((e) => e.name === item.name)[0].qty--;
 
+      // If quantity goes down to 0, then remove the option from the array
       if (
         self.selections
           .get(product.id)
@@ -138,6 +148,7 @@ export const SelectionStore = types
       }
     }
 
+    // Runs when quantity of a selected option item goes down to 0
     function removeOptionItem(product, option, item) {
       const itemIndex = self.selections
         .get(product.id)

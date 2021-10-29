@@ -22,6 +22,7 @@ import Loader from '../../components/Loader';
 
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
+import RenderSeparator from '../../components/RenderSeparator';
 
 const CartScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -101,16 +102,6 @@ const CartScreen = inject('shop')(
           </View>
         </View>
       </Swipeable>
-    );
-
-    const RenderSeparator = () => (
-      <View
-        style={{
-          height: 1,
-          width: '100%',
-          backgroundColor: '#CED0CE',
-        }}
-      />
     );
 
     const LineTotal = ({ text, total }) => (

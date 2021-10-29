@@ -23,25 +23,9 @@ import {
   Roboto_900Black_Italic,
 } from '@expo-google-fonts/roboto';
 
-import { Text } from 'react-native';
-
 import { Provider } from 'mobx-react';
-import { observable, reaction } from 'mobx';
-import {
-  onSnapshot,
-  onAction,
-  onPatch,
-  applySnapshot,
-  applyAction,
-  applyPatch,
-  getSnapshot,
-} from 'mobx-state-tree';
-
-// import ProductModule from './src/store/product';
 
 import TabNavigator from './src/navigation/TabNavigator';
-import ProductScreen from './src/screens/ProductScreen';
-import CartScreen from './src/screens/CartScreen';
 
 import { ShopStore } from './src/models/ShopStore';
 

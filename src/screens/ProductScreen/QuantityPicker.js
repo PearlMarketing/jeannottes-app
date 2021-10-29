@@ -30,13 +30,15 @@ const QuantityPicker = inject('shop')(
             marginTop: 15,
             position: 'absolute',
             bottom: 0,
-            paddingBottom: isIphoneX ? 30 : 0,
+            // paddingBottom: isIphoneX ? 30 : 0,
             backgroundColor: 'white',
+            elevation: 5,
             transform: [
               {
                 translateY: slideY.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [isIphoneX ? viewHeight + 30 : viewHeight, 0],
+                  outputRange: [viewHeight, 0],
+                  // outputRange: [isIphoneX ? viewHeight + 30 : viewHeight, 0],
                 }),
               },
             ],

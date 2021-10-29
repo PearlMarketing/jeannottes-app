@@ -82,16 +82,6 @@ const ResetPasswordScreen = inject('shop')(
       return isFocused ? <StatusBar {...props} /> : null;
     }
 
-    const RenderSeparator = () => (
-      <View
-        style={{
-          height: 1,
-          width: '100%',
-          backgroundColor: '#CED0CE',
-        }}
-      />
-    );
-
     return (
       <SafeAreaView
         style={styles.container}

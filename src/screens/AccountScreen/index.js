@@ -24,29 +24,29 @@ import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
 import secureStore from '../../services/secureStore';
+import RenderSeparator from '../../components/RenderSeparator';
 
 const AccountScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
-    const [currentUser, setCurrentUser] = React.useState({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-    });
     const [loadOrders, setLoadOrders] = React.useState(false);
     const [recentOrders, setRecentOrders] = React.useState([]);
+    
+    // const fetchOrders = async () => {
+    //   const { data } = await Service.CustomerOrders(shop.user['id']);
+    //   setRecentOrders(data);
+    // };
 
-    const fetchOrders = async () => {
-      const { data } = await Service.CustomerOrders(shop.user['id']);
-      setRecentOrders(data);
-    };
-
+    // Fetches from Wordpress website
     React.useEffect(() => {
       if (loadOrders) {
-        fetchOrders();
+        async () => {
+          const { data } = await Service.CustomerOrders(shop.user['id']);
+          setRecentOrders(data);
+        };
       }
     }, [loadOrders]);
 
+    // if User is logged in, start loading user past orders
     React.useEffect(() => {
       if (shop.user.email && !loadOrders) {
         setLoadOrders(true);
@@ -57,16 +57,6 @@ const AccountScreen = inject('shop')(
       const isFocused = useIsFocused();
       return isFocused ? <StatusBar {...props} /> : null;
     }
-
-    const RenderSeparator = () => (
-      <View
-        style={{
-          height: 1,
-          width: '100%',
-          backgroundColor: '#CED0CE',
-        }}
-      />
-    );
 
     return (
       <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>

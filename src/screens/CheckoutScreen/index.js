@@ -24,6 +24,7 @@ import { validateEmail, validatePhone } from '../../services/helpers';
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import RenderSeparator from '../../components/RenderSeparator';
 
 const CheckoutScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -116,16 +117,6 @@ const CheckoutScreen = inject('shop')(
     //   var re = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
     //   return re.test(phone);
     // };
-
-    const RenderSeparator = () => (
-      <View
-        style={{
-          height: 1,
-          width: '100%',
-          backgroundColor: '#CED0CE',
-        }}
-      />
-    );
 
     const LineTotal = ({ text, total }) => (
       <View

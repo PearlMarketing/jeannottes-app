@@ -49,18 +49,16 @@ export const UserStore = types
       self.isLoading = loading;
     }
 
+    // fetch user data from local storage to see if user is logged in
     const loadUser = flow(function* loadUser() {
       try {
-        //fetch local storage to see if user is logged in
         const user = JSON.parse(yield secureStore.get('token'));
         const wc = (yield Service.Customer(user.id)).data;
-        // console.log(wc);
         self.user = {
           ...user,
           phone: user.phone || wc.billing.phone,
           billing: { ...wc.billing },
         };
-        // console.log(self.user);
       } catch (err) {
         console.log('No user token found in local storage', err);
       }
@@ -122,13 +120,13 @@ export const UserStore = types
     //   updateUser(userData);
     // }
 
+    // used during checkout to update the customer information before data is posts to Woocommerce
     function updateUser(user) {
       const userData = {
         ...self.user,
         ...user,
       };
       self.user = userData;
-      // console.log(userData)
     }
 
     function clearUser() {

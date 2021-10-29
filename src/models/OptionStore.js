@@ -3,9 +3,11 @@ import { types, getParent, flow } from 'mobx-state-tree';
 
 import Service from '../services/services';
 
+// A single option type (i.e. size, bread, vegetables)
 export const Option = types.model('Option', {
   id: types.identifierNumber,
   name: types.string,
+  // Array of available option choices (i.e. wheat, white & grain)
   options: types.array(
     types.model({
       name: types.string,
@@ -17,6 +19,7 @@ export const Option = types.model('Option', {
   isAvailable: true,
 });
 
+// Store of all option types
 export const OptionStore = types
   .model('OptionStore', {
     isLoading: true,
@@ -35,6 +38,7 @@ export const OptionStore = types
       self.isLoading = loading;
     }
 
+    // Runs after loadOptions is finished fetching data from website API
     function updateOptions(response) {
       values(self.options).forEach((option) => (option.isAvailable = false));
       response.forEach((optionData) => {
@@ -43,16 +47,20 @@ export const OptionStore = types
       });
     }
 
+    // Loads product options from Wordpress website
     const loadOptions = flow(function* loadOptions() {
       try {
         const response = yield Service.ProductEPO();
+
         const optionsData = response.data.filter((e) => e.id === 1773)[0]
           .tm_meta.tmfbuilder;
-        let radioOptions = [];
-        // Radio Options
+
+        let optionsArray = [];
+
+        // Add radio option types to optionsArray (i.e. size, bread)
         for (i = 0; i < optionsData.radiobuttons_header_title.length; i++) {
-          radioOptions.push({
-            id: radioOptions.length,
+          optionsArray.push({
+            id: optionsArray.length,
             name: optionsData.radiobuttons_header_title[i],
             options: optionsData.multiple_radiobuttons_options_title[i].map(
               (e, i) => ({
@@ -62,10 +70,11 @@ export const OptionStore = types
             type: 'radio',
           });
         }
-        // Checkbox Options
+        
+        // Add checkbox option types to optionsArray (i.e vegetables, dressings)
         for (i = 0; i < optionsData.checkboxes_internal_name.length; i++) {
-          radioOptions.push({
-            id: radioOptions.length,
+          optionsArray.push({
+            id: optionsArray.length,
             name: optionsData.checkboxes_internal_name[i],
             options: optionsData.multiple_checkboxes_options_value[i].map(
               (e, j) => ({
@@ -77,14 +86,9 @@ export const OptionStore = types
             type: 'checkbox',
           });
         }
-
-        // multiple_radiobuttons_options_title.map((option) => {
-        //   return {
-        //     ...option,
-        //     // price: parseFloat(option.price),
-        //   };
-        // });
-        updateOptions(radioOptions);
+        
+        // After all checkbox and radio options are added to array, update store
+        updateOptions(optionsArray);
         markLoading(false);
       } catch (err) {
         console.error('Failed to load options ', err);

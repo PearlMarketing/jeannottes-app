@@ -24,6 +24,7 @@ import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
 import secureStore from '../../services/secureStore';
+import RenderSeparator from '../../components/RenderSeparator';
 
 const OrderDetailsScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -33,16 +34,6 @@ const OrderDetailsScreen = inject('shop')(
       const isFocused = useIsFocused();
       return isFocused ? <StatusBar {...props} /> : null;
     }
-
-    const RenderSeparator = () => (
-      <View
-        style={{
-          height: 1,
-          width: '100%',
-          backgroundColor: '#CED0CE',
-        }}
-      />
-    );
 
     const LineItem = ({ item }) => (
       <>
@@ -112,7 +103,7 @@ const OrderDetailsScreen = inject('shop')(
               onPress={() => {
                 // Add selections to cart
                 shop.cart.reorderProduct(item);
-                ShopToast(item.name + ' added to cart!', navigation);
+                ShopToast(item.name + ' added to cart!');
               }}
             >
               <Text style={{ color: COLORS.white, ...FONTS.h3 }}>

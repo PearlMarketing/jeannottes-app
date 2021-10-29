@@ -1,4 +1,3 @@
-import { when, reaction, values } from 'mobx';
 import {
   types,
   getParent,
@@ -6,49 +5,27 @@ import {
   applySnapshot,
   destroy,
   flow,
-  clone,
-  cast,
-  castToSnapshot,
 } from 'mobx-state-tree';
-import { Product } from './ProductStore';
 
 import { Option } from './SelectionStore';
 
 import Service from '../services/services';
 
+// A single cart item
 const CartEntry = types
   .model('CartEntry', {
-    // quantity: 0,
     id: types.identifierNumber,
     product: types.number,
     name: types.string,
     type: types.string,
     quantity: types.number,
     options: types.array(Option),
-    // options: types.array(
-    //   types.model({
-    //     id: types.maybe(types.number),
-    //     name: types.string,
-    //     value: types.union(
-    //       types.string,
-    //       types.array(
-    //         // Add objects with pricing and qty
-    //         types.model({
-    //           name: types.string,
-    //           qty: types.number,
-    //           price: types.optional(types.number, 0),
-    //         })
-    //       )
-    //     ),
-    //     price: types.optional(types.number, 0),
-    //   })
-    // ),
     price: types.number,
   })
   .views((self) => ({
-    // get subTotal() {
-    //   return self.options.reduce((sum, e) => sum + e.price, 0);
-    // },
+    get store() {
+      return getParent(self);
+    },
     get subTotal() {
       const size = self.options.reduce((sum, e) => sum + e.price, 0);
       const extras = self.options.reduce((sum, e) => {
@@ -60,24 +37,20 @@ const CartEntry = types
       return (size + extras) * self.quantity;
     },
     get tax() {
-      return self.subTotal * 0.09;
+      return self.subTotal * self.store.taxRate * 0.01;
     },
   }))
   .actions((self) => ({
-    // increaseQuantity(number) {
-    //     self.quantity += number
-    // },
-    // setQuantity(number) {
-    //     self.quantity = number
-    // },
     remove() {
       getParent(self, 2).remove(self);
     },
   }));
 
+// Entire cart store
 export const CartStore = types
   .model('CartStore', {
     entries: types.array(CartEntry),
+    taxRate: types.optional(types.number, 8.5),
   })
   .views((self) => ({
     get shop() {
@@ -87,7 +60,7 @@ export const CartStore = types
       return self.entries.reduce((sum, e) => sum + e.subTotal, 0);
     },
     get tax() {
-      return self.subTotal * 0.09;
+      return self.subTotal * self.taxRate * 0.01;
     },
     get hasDiscount() {
       return self.subTotal >= 100;
@@ -99,63 +72,40 @@ export const CartStore = types
       return self.subTotal + self.tax - self.discount;
     },
     get canCheckout() {
-      return (
-        self.entries.length > 0
-        // && self.entries.every((entry) => entry.isValidProduct)
-      );
+      return self.entries.length > 0;
     },
   }))
   .actions((self) => {
-    // function afterAttach() {
-    //   if (typeof window !== 'undefined' && window.localStorage) {
-    //     when(
-    //       () => !self.shop.isLoading,
-    //       () => {
-    //         self.readFromLocalStorage();
-    //         reaction(
-    //           () => getSnapshot(self),
-    //           (json) => {
-    //             window.localStorage.setItem('cart', JSON.stringify(json));
-    //           }
-    //         );
-    //       }
-    //     );
-    //   }
-    // },
+    function setTax(taxRate) {
+      self.taxRate = parseFloat(taxRate);
+    }
+
+    // Grabs tax from Wordpress website.
+    const loadTax = flow(function* loadTax() {
+      try {
+        const response = yield Service.Tax(1);
+        const taxRate = response.data.rate;
+        setTax(taxRate);
+      } catch (err) {
+        console.error('Failed to load tax ', err);
+      }
+    });
+
     function addProduct(entry, notify = true) {
-      // console.log(entry);
-      // console.log(getSnapshot(entry));
       self.entries.push({
         ...getSnapshot(entry),
         product: entry.id,
         id: self.entries.length,
-        // options: entry.options,
-        // options: entry.options.map((option) => ({
-        //   id: option.id,
-        //   name: option.name,
-        //   // value: option.value,
-        //   value: Array.isArray(option.value)
-        //     ? option.value.map((extra) => ({
-        //         name: extra.name,
-        //         qty: extra.qty,
-        //         price: extra.price,
-        //       }))
-        //     : option.value,
-        //   price: option.price,
-        // })),
       });
       if (notify) self.shop.alert('Added to cart');
-      // console.log(self.entries);
     }
+
+    // This function is used on the Account screen, when customer wants to reorder a previously ordered product with selected options intact
     const reorderProduct = flow(function* reorderProduct(entry, notify = true) {
       const productType = self.shop.products.get(entry.product_id).type;
-
-      // console.log('type:' + productType);
-
-      // Each option section needs to be an array
       let options = [];
 
-      // Push Size option first
+      // Pushes Size option first
       productType === 'variable' &&
         (self.shop.productStore.products.get(entry.product_id).loadedVariations
           ? console.log('variations already loaded')
@@ -167,7 +117,8 @@ export const CartStore = types
       options.push({
         id: entry.variation_id,
         name: 'Size',
-        value: entry.meta_data.filter((e) => e.key === 'pa_size')[0].display_value,
+        value: entry.meta_data.filter((e) => e.key === 'pa_size')[0]
+          .display_value,
         price: self.shop.availableVariations
           .filter((e) => e.id === entry.product_id)[0]
           .options.filter(
@@ -179,14 +130,15 @@ export const CartStore = types
           )[0].price,
       });
 
+      // Combine options of the same type for correct MST SelectionStore formatting
       entry.meta_data
         .filter((e) => e.key === '_tmcartepo_data')[0]
         .value.map((option, i) => {
-          // ! Combine options of the same type
 
-          // ? check if option name already exists in array, if not, add entire object
+          // check if option name already exists in array
           options.filter((e) => e.name === option.name).length === 0 || i === 0
-            ? options.push({
+            ? // if not, add entire option type
+            options.push({
                 name: option.name,
                 value: [
                   {
@@ -201,7 +153,7 @@ export const CartStore = types
                   },
                 ],
               })
-            : // ? otherwise, if option type already exists, add just the value
+            : // otherwise, if option type already exists, add just the value to existing array
               (options
                 .filter((e) => e.name === option.name)[0]
                 .value.push({
@@ -217,6 +169,7 @@ export const CartStore = types
               console.log(options.filter((e) => e.name === option.name)[0]));
         });
 
+      // properly formatted product entry when reordering
       const newEntry = {
         product: entry.product_id,
         id: self.entries.length,
@@ -230,54 +183,30 @@ export const CartStore = types
 
       self.entries.push(newEntry);
 
-      // ! This is the model
-      // id: types.maybe(types.number),
-      // name: types.string,
-      // value: types.union(
-      //   types.string,
-      //   types.array(
-      //     // Add objects with pricing and qty
-      //     types.model({
-      //       name: types.string,
-      //       qty: types.number,
-      //       price: types.optional(types.number, 0),
-      //     })
-      //   )
-      // ),
-      // price: types.optional(types.number, 0),
-
-      // ! This was my old map
-      // options: entry.options.map((option) => ({
-      //   id: option.id,
-      //   name: option.name,
-      //   // value: option.value,
-      //   value: Array.isArray(option.value)
-      //     ? option.value.map((extra) => ({
-      //         name: extra.name,
-      //         qty: extra.qty,
-      //         price: extra.price,
-      //       }))
-      //     : option.value,
-      //   price: option.price,
-      // })),
       if (notify) self.shop.alert('Added to cart');
-      // console.log(self.entries);
     });
+
+    // Used when swipe removing on the cart screen
     function remove(product) {
       destroy(product);
     }
 
     const checkout = flow(function* checkout() {
       let lineItems = [];
-      self.entries.map((entry) => {
-        // format product options
-        let productOptions = [];
 
+      self.entries.map((entry) => {
+
+        // We want to map out each cart item, but we need to first map out the product options within each product
+        let productOptions = [];
         entry.options
           .filter((option) => option.name !== 'Size')
           .map((option) => {
-            // maps each product option in WC format
+
+            // Because the size option does not use an aray for the value, we need to separate size from all the other options.
+            // * Possible todo is to change this so that Size is consistent with the rest of the options.
+
             if (Array.isArray(option.value)) {
+              // If it is NOT size
               option.value.map((value) => {
                 const formattedOption = {
                   mode: 'builder',
@@ -292,10 +221,10 @@ export const CartStore = types
                   quantity: value.qty,
                 };
 
-                // console.log(option);
                 productOptions.push(formattedOption);
               });
             } else {
+              // For the size option
               const formattedOption = {
                 mode: 'builder',
                 element: {
@@ -309,17 +238,15 @@ export const CartStore = types
                 quantity: 1,
               };
 
-              // console.log(option);
               productOptions.push(formattedOption);
             }
           });
 
-        // take each entry and format
+        // Now that we have all the product options added, we take the cart item, reformat it to fit Woocommerce post order data, and add it to the lineItems array.
         let entryData = {
           product_id: entry.product,
           variation_id: entry.options.filter((e) => e.name === 'Size')[0].id,
           quantity: entry.quantity,
-          // calculate subtotal for each item
           subtotal: entry.subTotal.toString(),
           total: entry.subTotal.toString(),
           meta_data: [
@@ -333,9 +260,10 @@ export const CartStore = types
             },
           ],
         };
-        // push to lineItems array
         lineItems.push(entryData);
       });
+
+      // Includes customer information into post data
       const orderData = {
         customer_id: self.shop.user.id,
         payment_method: 'cod',
@@ -368,167 +296,17 @@ export const CartStore = types
         shipping_lines: [],
       };
 
-      // Sample Data for testing
-      const sampleOrderData = {
-        payment_method: 'cod',
-        payment_method_title: 'Cash',
-        set_paid: true,
-        billing: {
-          first_name: 'Culver',
-          last_name: 'Lau',
-          address_1: '',
-          address_2: '',
-          city: '',
-          state: '',
-          postcode: '',
-          country: '',
-          email: 'culver@pearlmarketing.com',
-          phone: '(555) 555-5555',
-        },
-        shipping: {
-          first_name: '',
-          last_name: '',
-          address_1: '',
-          address_2: '',
-          city: '',
-          state: '',
-          postcode: '',
-          country: '',
-        },
-        line_items: [
-          {
-            product_id: 1698,
-            variation_id: 1699,
-            quantity: 1,
-            subtotal: '6.98',
-            meta_data: [
-              {
-                key: '_tmcartepo_data',
-                value: [
-                  {
-                    mode: 'builder',
-                    element: {
-                      type: '',
-                    },
-                    name: 'Choose Your Bread',
-                    value: 'White Roll',
-                    price: 0,
-                    section: '',
-                    quantity: 1,
-                  },
-                  {
-                    mode: 'builder',
-                    element: {
-                      type: '',
-                    },
-                    name: 'Choose Your Cheese',
-                    value: 'Provolone',
-                    price: 0,
-                    section: '',
-                    quantity: 1,
-                  },
-                  {
-                    mode: 'builder',
-                    element: {
-                      type: '',
-                    },
-                    name: 'Optional Vegetables',
-                    value: 'Lettuce',
-                    price: 0,
-                    section: '',
-                    quantity: 1,
-                  },
-                  {
-                    mode: 'builder',
-                    element: {
-                      type: '',
-                    },
-                    name: 'Optional Vegetables',
-                    value: 'Tomatoes',
-                    price: 0,
-                    section: '',
-                    quantity: 1,
-                  },
-                  // {
-                  //   mode: 'builder',
-                  //   element: {
-                  //     type: '',
-                  //   },
-                  //   name: 'Optional Dressings',
-                  //   value: 'Oil',
-                  //   price: 0,
-                  //   section: '',
-                  //   quantity: 1,
-                  // },
-                  // {
-                  //   mode: 'builder',
-                  //   cssclass: 'extra-quantity',
-                  //   element: {
-                  //     type: '',
-                  //     // type: 'checkbox',
-                  //     rules_type: {
-                  //       'Extra Bacon (add .50 per slice)_0': ['math'],
-                  //     },
-                  //     _: {
-                  //       price_type: false,
-                  //     },
-                  //   },
-                  //   name: 'Extras',
-                  //   value: 'Extra Bacon (add .50 per slice)',
-                  //   price: 2,
-                  //   section: '',
-                  //   quantity: '4',
-                  //   price_formula: '0.50*{quantity}',
-                  // },
-                  // {
-                  //   mode: 'builder',
-                  //   element: {
-                  //     type: '',
-                  //   },
-                  //   name: 'Schedule For Later? (Optional)',
-                  //   value: '16:30',
-                  //   price: 0,
-                  //   section: '',
-                  //   quantity: 1,
-                  // },
-                  {
-                    mode: 'builder',
-                    element: {
-                      type: '',
-                    },
-                    name: 'Special instructions',
-                    value: 'This is a test! DO NOT MAKE ME',
-                    price: 0,
-                    section: '',
-                    quantity: 1,
-                  },
-                ],
-              },
-              {
-                key: '_tm_epo',
-                value: [1],
-              },
-            ],
-          },
-        ],
-        shipping_lines: [],
-      };
-
       try {
-        // Post to wc
+        // Post to Website Woocommerce
         const response = yield Service.CreateOrder(orderData);
 
-        // console.log(orderData);
-
         // If successful, clear cart
-        // console.warn(orderData);
         self.clear();
 
         return response;
-        // self.shop.alert(`Bought products for ${total} $ !`);
       } catch (err) {
-        console.error('Failed to post order ', err);
         // If not successful, show error toast
+        console.error('Failed to post order ', err);
         throw err;
       }
     });
@@ -536,12 +314,14 @@ export const CartStore = types
     function clear() {
       self.entries.clear();
     }
+
     function readFromLocalStorage() {
       const cartData = window.localStorage.getItem('cart');
       if (cartData) applySnapshot(self, JSON.parse(cartData));
     }
 
     return {
+      loadTax,
       addProduct,
       reorderProduct,
       remove,

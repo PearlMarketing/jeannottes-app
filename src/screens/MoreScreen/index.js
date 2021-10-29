@@ -22,6 +22,7 @@ import StyledTextInput from '../../components/TextInput';
 import { icons, SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import RenderSeparator from '../../components/RenderSeparator';
 
 const MoreScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -29,16 +30,6 @@ const MoreScreen = inject('shop')(
       const isFocused = useIsFocused();
       return isFocused ? <StatusBar {...props} /> : null;
     }
-
-    const RenderSeparator = () => (
-      <View
-        style={{
-          height: 1,
-          width: '100%',
-          backgroundColor: '#CED0CE',
-        }}
-      />
-    );
 
     return (
       <SafeAreaView
