@@ -10,7 +10,9 @@
     "preview": {
       "ios": {
         "simulator": true,
-        "image": "latest"
+        "cache": {
+          "disabled": true
+        }
       }
     },
     "production": {}

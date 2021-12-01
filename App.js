@@ -29,10 +29,10 @@ import TabNavigator from './src/navigation/TabNavigator';
 
 import { ShopStore } from './src/models/ShopStore';
 
-import Amplify from 'aws-amplify'
-import config from './src/aws-exports'
-import { Text } from 'react-native';
-Amplify.configure(config)
+// import Amplify from 'aws-amplify'
+// import config from './src/aws-exports'
+// import { Text } from 'react-native';
+// Amplify.configure(config)
 
 
 const fetcher = (url) => window.fetch(url).then((response) => response.json());
