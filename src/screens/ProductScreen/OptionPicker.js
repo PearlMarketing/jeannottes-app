@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
+// import { isIphoneX } from 'react-native-iphone-x-helper';
+import { Dimensions } from 'react-native';
 import { observer, inject } from 'mobx-react';
 
 import { SIZES, COLORS, FONTS } from '../../constants';
@@ -8,17 +9,11 @@ import { SIZES, COLORS, FONTS } from '../../constants';
 // Ideally, this would be the same component used for each picker
 const OptionPicker = inject('shop')(
   observer(
-    ({
-      shop,
-      product,
-      slideY,
-      slideDown,
-      pickerOptions,
-      pickerName,
-      // selectedOptions,
-      // setSelectedOptions,
-    }) => {
+    ({ shop, product, slideY, slideDown, pickerOptions, pickerName }) => {
       const [viewHeight, setViewHeight] = React.useState(0);
+      const windowHeight = Dimensions.get('window').height;
+
+      
 
       return (
         <Animated.View
@@ -30,7 +25,6 @@ const OptionPicker = inject('shop')(
             marginTop: 15,
             position: 'absolute',
             bottom: 0,
-            // paddingBottom: isIphoneX ? 30 : 0,
             backgroundColor: 'white',
             elevation: 5,
             transform: [
@@ -38,7 +32,6 @@ const OptionPicker = inject('shop')(
                 translateY: slideY.interpolate({
                   inputRange: [0, 1],
                   outputRange: [viewHeight, 0],
-                  // outputRange: [isIphoneX ? viewHeight + 30 : viewHeight, 0],
                 }),
               },
             ],
@@ -61,24 +54,8 @@ const OptionPicker = inject('shop')(
                   name: pickerName,
                   value: option.name,
                   price: option.price,
-                  id: option.id || 0
-                })
-                // const optionIndex = selectedOptions.findIndex(
-                //   (e) => e.option === pickerName
-                // );
-                // let updatedOption = [...selectedOptions];
-                // if (optionIndex >= 0) {
-                //   updatedOption[optionIndex] = {
-                //     ...updatedOption[optionIndex],
-                //     value: option.name,
-                //   };
-                // } else {
-                //   updatedOption.push({
-                //     option: pickerName,
-                //     value: option.name,
-                //   });
-                // }
-                // setSelectedOptions(updatedOption);
+                  id: option.id || 0,
+                });
                 slideDown();
               }}
             >

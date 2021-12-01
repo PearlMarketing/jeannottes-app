@@ -31,6 +31,7 @@ import { ShopStore } from './src/models/ShopStore';
 
 import Amplify from 'aws-amplify'
 import config from './src/aws-exports'
+import { Text } from 'react-native';
 Amplify.configure(config)
 
 

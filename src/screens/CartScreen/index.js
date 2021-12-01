@@ -4,38 +4,26 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   FlatList,
-  StatusBar,
   Animated,
 } from 'react-native';
 import { observer, inject } from 'mobx-react';
-import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import { RectButton } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import Header from '../../components/Header';
-import Loader from '../../components/Loader';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
-import Service from '../../services/services';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import RenderSeparator from '../../components/RenderSeparator';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
+import RouteButton from '../../components/RouteButton';
 
 const CartScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
-
     const renderRightActions = (item) => {
       return (
         <TouchableOpacity
           style={{
-            // width: 80,
             backgroundColor: '#D11A2A',
             justifyContent: 'center',
           }}
@@ -73,9 +61,11 @@ const CartScreen = inject('shop')(
               <Text key={i}>Quantity: {item.quantity}</Text>
               {item.options.map((option, i) => (
                 <Text key={i}>
+                  {/* Displays options for each cart item */}
                   {option.name}:{' '}
                   {Array.isArray(option.value)
-                    ? option.value.reduce(
+                    ? // If option item has multiple qty, add multiplier text next to it (i.e. extra meats)
+                      option.value.reduce(
                         (array, e, i) =>
                           array +
                           (i !== 0 ? ', ' : '') +
@@ -136,151 +126,66 @@ const CartScreen = inject('shop')(
       >
         <FocusAwareStatusBar barStyle='dark-content' />
         <Header route={route} navigation={navigation} dark title='Cart' />
-        {/* {isLoadingProduct ? (
-        <Loader />
-      ) : ( */}
-        <>
-          {/* // TODO: show message if no items */}
-          {!shop.cart.entries.length ? (
-            <View
+
+        {/* Check if items are in cart & show message if cart is empty */}
+        {!shop.cart.entries.length ? (
+          <View
+            style={{
+              paddingHorizontal: SIZES.padding * 2,
+              paddingVertical: SIZES.padding,
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: SIZES.width,
+              backgroundColor: 'white',
+              flex: 1,
+            }}
+          >
+            <Text
               style={{
-                paddingHorizontal: SIZES.padding * 2,
-                paddingVertical: SIZES.padding,
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: SIZES.width,
-                backgroundColor: 'white',
-                flex: 1,
+                ...FONTS.h3,
+                paddingVertical: 20,
               }}
             >
-              <Text
-                style={{
-                  ...FONTS.h3,
-                  paddingVertical: 20,
-                }}
-              >
-                No Items in Cart
-              </Text>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: COLORS.primary,
-                  width: '100%',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  ...styles.shadow,
-                  borderRadius: SIZES.radius * 2,
-                }}
-                onPress={() => {
-                  // TODO: only allow if there are items in cart
-                  navigation.navigate('Shop', {
-                    // product: product,
-                    // selectedOptions: selectedOptions,
-                  });
-                }}
-              >
-                <Text
-                  style={{
-                    color: COLORS.white,
-                    ...FONTS.h3,
-                  }}
-                >
-                  Order Items
-                </Text>
-                <Ionicons
-                  name='arrow-forward'
-                  style={{
-                    color: COLORS.white,
-                    position: 'absolute',
-                    right: 20,
-                    // ...FONTS.h3,
-                  }}
-                  size={26}
-                />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              {/* Line Items */}
-              <FlatList
-                // style={{
-                //   flexGrow: 0,
-                // }}
-                data={shop.cart.entries}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <LineItem key={item.id} item={item} />
-                )}
-                ItemSeparatorComponent={RenderSeparator}
-                ListFooterComponent={
-                  <>
-                    <RenderSeparator />
-                    <LineTotal
-                      text='Subtotal'
-                      total={shop.cart.total.toFixed(2)}
-                    />
-                    <RenderSeparator />
-                  </>
-                }
-              />
-              {/* Order Button */}
-              {/* // TODO: fade if no items in cart */}
-              <View
-                style={{
-                  paddingHorizontal: SIZES.padding * 2,
-                  paddingVertical: SIZES.padding,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: SIZES.width,
-                  backgroundColor: 'white',
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: COLORS.primary,
-                    width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                    paddingHorizontal: 20,
-                    ...styles.shadow,
-                    borderRadius: SIZES.radius * 2,
-                  }}
-                  onPress={() => {
-                    // TODO: only allow if there are items in cart
-                    navigation.navigate('Checkout', {
-                      // product: product,
-                      // selectedOptions: selectedOptions,
-                    });
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: COLORS.white,
-                      ...FONTS.h3,
-                    }}
-                  >
-                    Checkout
-                  </Text>
-                  <Ionicons
-                    name='arrow-forward'
-                    style={{
-                      color: COLORS.white,
-                      position: 'absolute',
-                      right: 20,
-                      // ...FONTS.h3,
-                    }}
-                    size={26}
+              No Items in Cart
+            </Text>
+
+            <RouteButton
+              onPress={() => {
+                navigation.navigate('Shop');
+              }}
+            >
+              Order Items
+            </RouteButton>
+          </View>
+        ) : (
+          <>
+            {/* Line Items */}
+            <FlatList
+              data={shop.cart.entries}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => <LineItem key={item.id} item={item} />}
+              ItemSeparatorComponent={RenderSeparator}
+              ListFooterComponent={
+                <>
+                  <RenderSeparator />
+                  <LineTotal
+                    text='Subtotal'
+                    total={shop.cart.total.toFixed(2)}
                   />
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </>
-        {/* )} */}
+                  <RenderSeparator />
+                </>
+              }
+            />
+            {/* Order Button */}
+            <RouteButton
+              onPress={() => {
+                navigation.navigate('Checkout');
+              }}
+            >
+              Checkout
+            </RouteButton>
+          </>
+        )}
       </SafeAreaView>
     );
   })

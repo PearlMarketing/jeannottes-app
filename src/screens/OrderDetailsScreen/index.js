@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -20,100 +20,103 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
 import secureStore from '../../services/secureStore';
 import RenderSeparator from '../../components/RenderSeparator';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 
 const OrderDetailsScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
     let { order } = route.params;
 
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
-
-    const LineItem = ({ item }) => (
-      <>
-        <View
-          style={{
-            width: '100%',
-            backgroundColor: COLORS.white,
-            color: COLORS.primary,
-            paddingVertical: SIZES.padding,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <View>
-            <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
+    const LineItem = ({ item }) => {
+      const [isReordering, setIsReordering] = useState(false);
+      return (
+        <>
+          <View
+            style={{
+              width: '100%',
+              backgroundColor: COLORS.white,
+              color: COLORS.primary,
+              paddingVertical: SIZES.padding,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <View>
-              {item.meta_data
-                .filter((e) => e.key === '_tmcartepo_data')[0]
-                .value.map((option, i) => (
-                  <Text key={i}>
-                    {option.name} : {option.value}
-                    {/* {option.name}:{' '}
+              <Text style={{ ...FONTS.h4 }}>{item.name}</Text>
+              <View>
+                {item.meta_data
+                  .filter((e) => e.key === '_tmcartepo_data')[0]
+                  .value.map((option, i) => (
+                    <Text key={i}>
+                      {option.name} : {option.value}
+                      {/* {option.name}:{' '}
                 {Array.isArray(option.value)
                   ? option.value.reduce(
                       (array, e) => array + e.name + '(' + e.qty + ') ',
                       ''
                     )
                   : option.value} */}
-                  </Text>
-                ))}
+                    </Text>
+                  ))}
+              </View>
+            </View>
+            <View>
+              <Text
+                style={{
+                  ...FONTS.h4,
+                  flexGrow: 0,
+                  flexShrink: 0,
+                  flexBasis: 'auto',
+                }}
+              >
+                ${item.total}
+              </Text>
             </View>
           </View>
-          <View>
-            <Text
-              style={{
-                ...FONTS.h4,
-                flexGrow: 0,
-                flexShrink: 0,
-                flexBasis: 'auto',
-              }}
-            >
-              ${item.total}
-            </Text>
-          </View>
-        </View>
-        <View
-          style={{
-            paddingVertical: SIZES.padding,
-          }}
-        >
           <View
             style={{
-              paddingTop: SIZES.padding,
-              alignItems: 'center',
-              justifyContent: 'center',
+              paddingVertical: SIZES.padding,
             }}
           >
-            <TouchableOpacity
+            <View
               style={{
-                width: SIZES.width * 0.5,
-                padding: SIZES.padding * 0.5,
-                backgroundColor: COLORS.primary,
+                paddingTop: SIZES.padding,
                 alignItems: 'center',
-                borderRadius: SIZES.radius * 2,
-              }}
-              onPress={() => {
-                // Add selections to cart
-                shop.cart.reorderProduct(item);
-                ShopToast(item.name + ' added to cart!');
+                justifyContent: 'center',
               }}
             >
-              <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
-                Reorder Item
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  width: SIZES.width * 0.5,
+                  padding: SIZES.padding * 0.5,
+                  backgroundColor: isReordering ? '#777' : COLORS.primary,
+                  alignItems: 'center',
+                  borderRadius: SIZES.radius * 2,
+                }}
+                disabled={isReordering}
+                onPress={() => {
+                  // Add selections to cart
+                  setIsReordering(true);
+                  shop.cart
+                    .reorderProduct(item)
+                    .then(() => ShopToast(item.name + ' added to cart!'))
+                    .finally(() => setIsReordering(false));
+                }}
+              >
+                <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                  {isReordering ? 'Loading...' : 'Reorder Item'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </>
-    );
+        </>
+      );
+    };
 
     return (
       <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>

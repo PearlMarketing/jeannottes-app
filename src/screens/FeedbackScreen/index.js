@@ -23,9 +23,10 @@ import StyledTextInput from '../../components/TextInput';
 
 import { validateEmail } from '../../services/helpers';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 
 const FeedbackScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -75,12 +76,6 @@ const FeedbackScreen = inject('shop')(
       }
     };
 
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
-
-
     return (
       <SafeAreaView
         style={styles.container}
@@ -88,41 +83,35 @@ const FeedbackScreen = inject('shop')(
       >
         <FocusAwareStatusBar barStyle='dark-content' />
         <Header route={route} navigation={navigation} dark title='Feedback' />
-        {/* {isLoadingProduct ? (
-        <Loader />
-      ) : ( */}
-        <>
-          <View
+
+        <View
+          style={{
+            backgroundColor: COLORS.white,
+            width: SIZES.width,
+            paddingHorizontal: SIZES.padding * 2,
+            paddingVertical: SIZES.padding,
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: SIZES.width,
+            backgroundColor: 'white',
+            flex: 1,
+          }}
+        >
+          <Text
             style={{
-              backgroundColor: COLORS.white,
-              width: SIZES.width,
-              paddingHorizontal: SIZES.padding * 2,
-              // paddingHorizontal: SIZES.padding * 2,
-              paddingVertical: SIZES.padding,
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: SIZES.width,
-              backgroundColor: 'white',
-              flex: 1,
+              ...FONTS.h3,
+              textAlign: 'center',
             }}
           >
+            For all feedback and questions, or to report a bug, please contact{' '}
             <Text
-              style={{
-                ...FONTS.h3,
-                textAlign: 'center'
-              }}
+              onPress={() => Linking.openURL('mailto:info@pearlmarketing.com')}
             >
-              For all feedback and questions, or to report a bug, please contact{' '}
-              <Text
-                onPress={() =>
-                  Linking.openURL('mailto:info@pearlmarketing.com')
-                }
-              >
-                info@pearlmarketing.com
-              </Text>
+              info@pearlmarketing.com
             </Text>
-            {/* Checkout Fields */}
-            {/* <View
+          </Text>
+          {/* Checkout Fields */}
+          {/* <View
               style={{
                 // width: SIZES.width,
                 marginVertical: 8,
@@ -158,9 +147,9 @@ const FeedbackScreen = inject('shop')(
               />
             </View> */}
 
-            {/* //! Don't allow ordering until all fields are filled out */}
-            {/* Submit Button */}
-            {/* <View
+          {/* //! Don't allow ordering until all fields are filled out */}
+          {/* Submit Button */}
+          {/* <View
               style={{
                 paddingVertical: SIZES.padding,
                 alignItems: 'center',
@@ -202,9 +191,7 @@ const FeedbackScreen = inject('shop')(
                 />
               </TouchableOpacity>
             </View> */}
-          </View>
-        </>
-        {/* )} */}
+        </View>
       </SafeAreaView>
     );
   })

@@ -13,10 +13,6 @@ const QuantityPicker = inject('shop')(
       product,
       slideY,
       slideDown,
-      // pickerOptions,
-      // pickerName,
-      // selectedOptions,
-      // setSelectedOptions,
     }) => {
       const [viewHeight, setViewHeight] = React.useState(0);
 

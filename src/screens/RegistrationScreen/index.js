@@ -21,9 +21,11 @@ import StyledTextInput from '../../components/TextInput';
 
 import { validateEmail, validatePhone } from '../../services/helpers';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
+import RouteButton from '../../components/RouteButton';
 
 const RegistrationScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -152,11 +154,6 @@ const RegistrationScreen = inject('shop')(
       }
     };
 
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
-
     return (
       <SafeAreaView
         style={styles.container}
@@ -169,15 +166,13 @@ const RegistrationScreen = inject('shop')(
             style={{
               backgroundColor: COLORS.white,
               width: SIZES.width,
-              paddingHorizontal: SIZES.padding * 2,
             }}
           >
             {/* Checkout Fields */}
             <View
               style={{
-                // width: SIZES.width,
                 marginVertical: 8,
-                // paddingHorizontal: SIZES.padding * 2,
+                paddingHorizontal: SIZES.padding * 2,
               }}
             >
               {/* First Name */}
@@ -283,51 +278,10 @@ const RegistrationScreen = inject('shop')(
               />
             </View>
 
-            {/* //! Don't allow button until all fields are filled out */}
             {/* Registration Button */}
-            <View
-              style={{
-                paddingVertical: SIZES.padding,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'white',
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  backgroundColor: processing ? '#777' : COLORS.primary,
-                  width: '100%',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  ...styles.shadow,
-                  borderRadius: SIZES.radius * 2,
-                }}
-                disabled={processing}
-                onPress={createCustomer}
-              >
-                <Text
-                  style={{
-                    color: COLORS.white,
-                    ...FONTS.h3,
-                  }}
-                >
-                  {processing ? 'Processing...' : 'Register'}
-                </Text>
-                <Ionicons
-                  name='arrow-forward'
-                  style={{
-                    color: COLORS.white,
-                    position: 'absolute',
-                    right: 20,
-                    // ...FONTS.h3,
-                  }}
-                  size={26}
-                />
-              </TouchableOpacity>
-            </View>
+            <RouteButton disabled={processing} onPress={createCustomer}>
+              {processing ? 'Processing...' : 'Register'}
+            </RouteButton>
           </ScrollView>
         </>
       </SafeAreaView>

@@ -60,7 +60,7 @@ export const UserStore = types
           billing: { ...wc.billing },
         };
       } catch (err) {
-        console.log('No user token found in local storage', err);
+        console.log('No user token found in local storage');
       }
     });
 

@@ -21,9 +21,10 @@ import StyledTextInput from '../../components/TextInput';
 
 import { validateEmail, validatePhone } from '../../services/helpers';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 
 const SetPasswordScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -99,11 +100,6 @@ const SetPasswordScreen = inject('shop')(
         }
       }
     };
-
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
 
     return (
       <SafeAreaView

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { SIZES, COLORS, FONTS } from '../../constants';
 import { observer, inject } from 'mobx-react';

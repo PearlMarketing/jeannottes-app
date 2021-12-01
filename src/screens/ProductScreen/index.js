@@ -1,40 +1,36 @@
 import React, { useState } from 'react';
 import {
   View,
-  // KeyboardAvoidingView,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Animated,
-  StatusBar,
-  ScrollView,
-  FlatList,
-  Button,
-  Platform,
 } from 'react-native';
-import { Input } from 'react-native-elements';
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
+// import { Dimensions } from 'react-native';
+
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { observer, inject } from 'mobx-react';
-import { useIsFocused } from '@react-navigation/native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import ShopToast from '../../components/ShopToast';
-// import Toast from 'react-native-root-toast'
-// import { Ionicons } from '@expo/vector-icons';
-// import { isIphoneX } from 'react-native-iphone-x-helper';
 import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
-// import Service from '../../services/services';
+import { SIZES, COLORS, FONTS } from '../../constants';
 
 import ProductInfo from './ProductInfo';
 import ProductOptions from './ProductOptions';
 import OptionPicker from './OptionPicker';
 import QuantityPicker from './QuantityPicker';
 import TimePicker from './TimePicker';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
+import OptionButton from '../../components/OptionButton';
 
 const ProductScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -48,6 +44,25 @@ const ProductScreen = inject('shop')(
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [specialInstructions, setSpecialInstructions] = useState('');
+
+    // const [viewHeight, setViewHeight] = React.useState(0);
+    // const windowHeight = Dimensions.get('window').height;
+
+    // const bottomSheetModalRef = React.useRef(null);
+
+    // variables
+    // const snapPoints = React.useMemo(
+    //   () => ['50%', windowHeight- 200],
+    //   []
+    // );
+
+    // // callbacks
+    // const handlePresentModalPress = React.useCallback(() => {
+    //   bottomSheetModalRef.current?.present();
+    // }, []);
+    // const handleSheetChanges = React.useCallback((index) => {
+    //   console.log('handleSheetChanges', index);
+    // }, []);
 
     const showDatePicker = () => {
       setDatePickerVisibility(true);
@@ -127,228 +142,225 @@ const ProductScreen = inject('shop')(
       }).start();
     };
 
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
-
     return (
       <SafeAreaView style={styles.container} edges={['right', 'left']}>
-        <FocusAwareStatusBar barStyle='light-content' />
-        <Header route={route} navigation={navigation} transparent />
-        {!product?.id ? (
-          <Loader />
-        ) : !shop.productStore.products.get(product.id).loadedVariations ? (
-          <Loader />
-        ) : (
-          <>
-            <KeyboardAwareScrollView>
+        {/* <BottomSheetModalProvider> */}
+          <FocusAwareStatusBar barStyle='light-content' />
+          <Header route={route} navigation={navigation} transparent />
+          {!product?.id ? (
+            <Loader />
+          ) : !shop.productStore.products.get(product.id).loadedVariations ? (
+            <Loader />
+          ) : (
+            <>
+              <KeyboardAwareScrollView>
+                <View
+                  style={{
+                    paddingBottom: 10,
+                  }}
+                >
+                  <ProductInfo product={product} />
+
+                  {product?.purchasable ? (
+                    <>
+                      <ProductOptions
+                        item={
+                          shop.availableVariations.filter(
+                            (e) => e.id === product.id
+                          )[0]
+                        }
+                        product={product}
+                        showOptions={showOptions}
+                        // handlePresentModalPress={handlePresentModalPress}
+                      />
+                      {shop.availableOptions.map((item) => (
+                        <ProductOptions
+                          key={item.id}
+                          item={item}
+                          product={product}
+                          showOptions={showOptions}
+                          navigation={navigation}
+                        />
+                      ))}
+
+                      {/* Time Picker */}
+                      <TimePicker
+                        product={product}
+                        title='Pickup Time (Optional)'
+                        onPress={showDatePicker}
+                      />
+                      <DateTimePickerModal
+                        isVisible={isDatePickerVisible}
+                        mode='time'
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                      />
+
+                      <View
+                        style={{
+                          width: SIZES.width,
+                          paddingHorizontal: SIZES.padding * 2,
+                        }}
+                      >
+                        <StyledTextInput
+                          label='Special Instructions'
+                          onChangeText={setSpecialInstructions}
+                        />
+                      </View>
+                    </>
+                  ) : (
+                    <Text>
+                      This product is not available for purchase right now
+                    </Text>
+                  )}
+                </View>
+              </KeyboardAwareScrollView>
+
+              {/* Bottom Order Button Bar */}
               <View
                 style={{
-                  paddingBottom: 10,
+                  paddingHorizontal: SIZES.padding * 2,
+                  paddingVertical: SIZES.padding,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: SIZES.width,
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: -3,
+                  },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 3,
+                  elevation: 1,
                 }}
               >
-                <ProductInfo product={product} />
-
-                {product?.purchasable ? (
-                  <>
-                    <ProductOptions
-                      item={
-                        shop.availableVariations.filter(
-                          (e) => e.id === product.id
-                        )[0]
-                      }
-                      product={product}
-                      // selectedOptions={selectedOptions}
-                      // setSelectedOptions={setSelectedOptions}
-                      showOptions={showOptions}
-                    />
-                    {shop.availableOptions.map((item) => (
-                      <ProductOptions
-                        key={item.id}
-                        item={item}
-                        product={product}
-                        // selectedOptions={selectedOptions}
-                        // setSelectedOptions={setSelectedOptions}
-                        showOptions={showOptions}
-                        navigation={navigation}
-                      />
-                    ))}
-
-                    {/* Time Picker */}
-                    <TimePicker
-                      product={product}
-                      title='Pickup Time (Optional)'
-                      onPress={showDatePicker}
-                    />
-                    <DateTimePickerModal
-                      isVisible={isDatePickerVisible}
-                      mode='time'
-                      onConfirm={handleConfirm}
-                      onCancel={hideDatePicker}
-                    />
-
-                    <View
-                      style={{
-                        width: SIZES.width,
-                        paddingHorizontal: SIZES.padding * 2,
-                      }}
-                    >
-                      <StyledTextInput
-                        label='Special Instructions'
-                        onChangeText={setSpecialInstructions}
-                      />
-                    </View>
-                  </>
-                ) : (
-                  <Text>
-                    This product is not available for purchase right now
-                  </Text>
+                {product?.purchasable && (
+                  <TouchableOpacity
+                    style={{
+                      marginRight: 10,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      backgroundColor: 'white',
+                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                      ...styles.shadow,
+                      borderColor: COLORS.primary,
+                      borderWidth: 1,
+                      borderRadius: SIZES.radius * 2,
+                    }}
+                    onPress={() => {
+                      showQuantity();
+                    }}
+                  >
+                    <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
+                      {shop.selectionStore.selections?.get(product.id)
+                        .quantity || 1}
+                      x
+                    </Text>
+                  </TouchableOpacity>
                 )}
-              </View>
-            </KeyboardAwareScrollView>
-
-            {/* Bottom Order Button Bar */}
-            <View
-              style={{
-                paddingHorizontal: SIZES.padding * 2,
-                paddingVertical: SIZES.padding,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: SIZES.width,
-                backgroundColor: 'white',
-                shadowColor: '#000',
-                shadowOffset: {
-                  width: 0,
-                  height: -3,
-                },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 1,
-              }}
-            >
-              {product?.purchasable && (
                 <TouchableOpacity
+                  disabled={!product.purchasable}
                   style={{
-                    // backgroundColor: COLORS.primary,
-                    // width: '100%',
-                    marginRight: 10,
+                    backgroundColor: product.purchasable
+                      ? COLORS.primary
+                      : '#777',
+                    flexGrow: 1,
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    backgroundColor: 'white',
                     paddingVertical: 10,
-                    paddingHorizontal: 10,
+                    paddingHorizontal: 20,
                     ...styles.shadow,
-                    borderColor: COLORS.primary,
-                    borderWidth: 1,
                     borderRadius: SIZES.radius * 2,
                   }}
                   onPress={() => {
-                    showQuantity();
+                    if (
+                      shop.selectionStore.selections
+                        .get(product.id)
+                        .options.filter((e) => e.name === 'Size').length
+                    ) {
+                      // Add special instructions to selection options
+                      specialInstructions.length &&
+                        shop.selectionStore.addOption(product, {
+                          name: 'Special Instructions',
+                          value: specialInstructions,
+                        });
+
+                      // Add selections to cart
+                      shop.cart.addProduct(
+                        shop.selectionStore.selections.get(product.id)
+                      );
+                      shop.selectionStore.clearSelections(product);
+                      ShopToast(product.name + ' added to cart!');
+                      navigation.navigate('Shop');
+                    } else {
+                      ShopToast('Please select Size');
+                    }
                   }}
                 >
-                  <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
-                    {shop.selectionStore.selections?.get(product.id).quantity ||
-                      1}
-                    x
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                disabled={!product.purchasable}
-                style={{
-                  backgroundColor: product.purchasable
-                    ? COLORS.primary
-                    : '#777',
-                  // width: '100%',
-                  flexGrow: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  ...styles.shadow,
-                  borderRadius: SIZES.radius * 2,
-                }}
-                onPress={() => {
-                  if (
-                    shop.selectionStore.selections
-                      .get(product.id)
-                      .options.filter((e) => e.name === 'Size').length
-                  ) {
-                    // Add special instructions to selection options
-                    specialInstructions.length &&
-                      shop.selectionStore.addOption(product, {
-                        name: 'Special Instructions',
-                        value: specialInstructions,
-                        // price: 0,
-                        // id: 0
-                      });
-
-                    // Add selections to cart
-                    shop.cart.addProduct(
-                      shop.selectionStore.selections.get(product.id)
-                    );
-                    shop.selectionStore.clearSelections(product);
-                    ShopToast(product.name + ' added to cart!');
-                    navigation.navigate('Shop');
-                  } else {
-                    ShopToast('Please select Size');
-                  }
-                }}
-              >
-                {product.purchasable ? (
-                  <>
-                    <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
-                      Add To Order
-                    </Text>
-                    <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
-                      $
-                      {(shop.selectionStore.selections
-                        ?.get(product.id)
-                        .options.filter((e) => e.name === 'Size').length &
-                        (shop.selectionStore.selections
-                          ?.get(product.id)
-                          .subTotal.toFixed(2) >
-                          0) &&
-                        shop.selectionStore.selections
-                          ?.get(product.id)
-                          .subTotal.toFixed(2) *
+                  {product.purchasable ? (
+                    <>
+                      <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                        Add To Order
+                      </Text>
+                      <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                        $
+                        {(
+                          shop.selectionStore.selections
+                            ?.get(product.id)
+                            .options.filter((e) => e.name === 'Size').length &
+                            (shop.selectionStore.selections
+                              ?.get(product.id)
+                              .subTotal.toFixed(2) >
+                              0) &&
                           shop.selectionStore.selections?.get(product.id)
-                            .quantity) ||
-                        '---'}
+                            .subTotal *
+                            shop.selectionStore.selections?.get(product.id)
+                              .quantity
+                        ).toFixed(2) || '---'}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
+                      Currently Unavailable
                     </Text>
-                  </>
-                ) : (
-                  <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
-                    Currently Unavailable
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                  )}
+                </TouchableOpacity>
+              </View>
 
-            <OptionPicker
-              product={product}
-              slideY={slideY}
-              slideDown={slideDown}
-              pickerName={pickerName}
-              pickerOptions={pickerOptions}
-              // selectedOptions={selectedOptions}
-              // setSelectedOptions={setSelectedOptions}
-            />
-            <QuantityPicker
-              product={product}
-              slideY={slideYQuantity}
-              slideDown={slideDownQuantity}
-              // pickerName={pickerName}
-              // pickerOptions={pickerOptions}
-              // selectedOptions={selectedOptions}
-              // setSelectedOptions={setSelectedOptions}
-            />
-          </>
-        )}
+              {/* <BottomSheetModal
+                ref={bottomSheetModalRef}
+                index={0}
+                snapPoints={snapPoints}
+                onChange={handleSheetChanges}
+                style={{ zIndex: 10, elevation: 10 }}
+              >
+                <View
+                  style={styles.contentContainer}
+                >
+                  <Text>Awesome 🎉</Text>
+                </View>
+              </BottomSheetModal> */}
+
+              <OptionPicker
+                product={product}
+                slideY={slideY}
+                slideDown={slideDown}
+                pickerName={pickerName}
+                pickerOptions={pickerOptions}
+              />
+              <QuantityPicker
+                product={product}
+                slideY={slideYQuantity}
+                slideDown={slideDownQuantity}
+              />
+            </>
+          )}
+        {/* </BottomSheetModalProvider> */}
       </SafeAreaView>
     );
   })

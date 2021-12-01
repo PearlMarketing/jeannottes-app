@@ -4,26 +4,22 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  FlatList,
-  StatusBar,
   ScrollView,
 } from 'react-native';
-import { Input } from 'react-native-elements';
+
 import { observer, inject } from 'mobx-react';
-import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-// import { isIphoneX } from 'react-native-iphone-x-helper';
 import Header from '../../components/Header';
-import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
-import { validateEmail, validatePhone } from '../../services/helpers';
+import { validateEmail } from '../../services/helpers';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
+import RouteButton from '../../components/RouteButton';
 
 const ResetPasswordScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -48,22 +44,14 @@ const ResetPasswordScreen = inject('shop')(
           setProcessing(true);
           try {
             // passes validation
-            // console.log(currentUser);
             const response = await Service.ResetPassword(currentUser);
-            // console.log(response);
 
             if (response.data.data.status === 200) {
               setProcessing(false);
-              // setCurrentUser({
-              //   email: ''
-              // });
               ShopToast(response.data.message);
               navigation.navigate('Set Password', {email: currentUser.email});
             } else {
               setProcessing(false);
-              // console.error(
-              //   response.data.data.status + ': ' + response.data.message
-              // );
               ShopToast(
                 response.data.data.status + ': ' + response.data.message
               );
@@ -76,11 +64,6 @@ const ResetPasswordScreen = inject('shop')(
         }
       }
     };
-
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
 
     return (
       <SafeAreaView
@@ -99,14 +82,13 @@ const ResetPasswordScreen = inject('shop')(
             style={{
               backgroundColor: COLORS.white,
               width: SIZES.width,
-              paddingHorizontal: SIZES.padding * 2,
             }}
           >
             <View
               style={{
                 // width: SIZES.width,
                 marginVertical: 8,
-                // paddingHorizontal: SIZES.padding * 2,
+                paddingHorizontal: SIZES.padding * 2,
               }}
             >
               <Text>
@@ -119,7 +101,7 @@ const ResetPasswordScreen = inject('shop')(
               style={{
                 // width: SIZES.width,
                 marginVertical: 8,
-                // paddingHorizontal: SIZES.padding * 2,
+                paddingHorizontal: SIZES.padding * 2,
               }}
             >
               {/* Email Address */}
@@ -140,51 +122,10 @@ const ResetPasswordScreen = inject('shop')(
               />
             </View>
 
-            {/* //! Don't allow button until all fields are filled out */}
             {/* Reset Password Button */}
-            <View
-              style={{
-                paddingVertical: SIZES.padding,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'white',
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  backgroundColor: processing ? '#777' : COLORS.primary,
-                  width: '100%',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  ...styles.shadow,
-                  borderRadius: SIZES.radius * 2,
-                }}
-                disabled={processing}
-                onPress={resetPassword}
-              >
-                <Text
-                  style={{
-                    color: COLORS.white,
-                    ...FONTS.h3,
-                  }}
-                >
-                  {processing ? 'Processing...' : 'Reset Password'}
-                </Text>
-                <Ionicons
-                  name='arrow-forward'
-                  style={{
-                    color: COLORS.white,
-                    position: 'absolute',
-                    right: 20,
-                    // ...FONTS.h3,
-                  }}
-                  size={26}
-                />
-              </TouchableOpacity>
-            </View>
+            <RouteButton disabled={processing} onPress={resetPassword}>
+              {processing ? 'Processing...' : 'Reset Password'}
+            </RouteButton>
           </ScrollView>
         </>
       </SafeAreaView>

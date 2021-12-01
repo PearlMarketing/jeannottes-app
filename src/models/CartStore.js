@@ -101,7 +101,10 @@ export const CartStore = types
     }
 
     // This function is used on the Account screen, when customer wants to reorder a previously ordered product with selected options intact
-    const reorderProduct = flow(function* reorderProduct(entry, notify = true) {
+    const reorderProduct = flow(function* reorderProduct(
+      entry,
+      notify = true
+    ) {
       const productType = self.shop.products.get(entry.product_id).type;
       let options = [];
 
@@ -134,16 +137,15 @@ export const CartStore = types
       entry.meta_data
         .filter((e) => e.key === '_tmcartepo_data')[0]
         .value.map((option, i) => {
-
           // check if option name already exists in array
           options.filter((e) => e.name === option.name).length === 0 || i === 0
             ? // if not, add entire option type
-            options.push({
+              options.push({
                 name: option.name,
                 value: [
                   {
                     name: option.value,
-                    qty: option.quantity,
+                    qty: parseInt(option.quantity), // Turn into number
                     price:
                       self.shop.availableOptions
                         .filter((product) => product.name === option.name)[0]
@@ -158,7 +160,7 @@ export const CartStore = types
                 .filter((e) => e.name === option.name)[0]
                 .value.push({
                   name: option.value,
-                  qty: option.quantity,
+                  qty: parseInt(option.quantity), // turn into number
                   price:
                     self.shop.availableOptions
                       .filter((product) => product.name === option.name)[0]
@@ -175,6 +177,7 @@ export const CartStore = types
         id: self.entries.length,
         name: entry.parent_name || entry.name,
         options: options,
+        quantity: 1,
         type: productType,
         price: self.shop.availableProducts.filter(
           (product) => product.id === entry.product_id
@@ -195,13 +198,11 @@ export const CartStore = types
       let lineItems = [];
 
       self.entries.map((entry) => {
-
         // We want to map out each cart item, but we need to first map out the product options within each product
         let productOptions = [];
         entry.options
           .filter((option) => option.name !== 'Size')
           .map((option) => {
-
             // Because the size option does not use an aray for the value, we need to separate size from all the other options.
             // * Possible todo is to change this so that Size is consistent with the rest of the options.
 

@@ -20,9 +20,11 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
+import RouteButton from '../../components/RouteButton';
 
 const LogInScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
@@ -43,12 +45,11 @@ const LogInScreen = inject('shop')(
             username: currentUser.username,
             password: currentUser.password,
           });
-          // console.log(auth);
           if (auth.success === true) {
             try {
               await secureStore.save('token', JSON.stringify(auth.data));
               await shop.userStore.loadUser();
-              // console.log(shop.user);
+              console.log(shop.user);
               ShopToast('Successfully Logged In to ' + shop.user.nicename);
               setProcessing(false);
               navigation.navigate('Account');
@@ -61,16 +62,11 @@ const LogInScreen = inject('shop')(
             ShopToast(auth.message);
           }
         } catch (e) {
-          setProcessing(false)
+          setProcessing(false);
           ShopToast(e.response.data.message);
         }
       }
     };
-
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
 
     return (
       <SafeAreaView
@@ -84,15 +80,13 @@ const LogInScreen = inject('shop')(
             style={{
               backgroundColor: COLORS.white,
               width: SIZES.width,
-              paddingHorizontal: SIZES.padding * 2,
             }}
           >
             {/* Checkout Fields */}
             <View
               style={{
-                // width: SIZES.width,
                 marginVertical: 8,
-                // paddingHorizontal: SIZES.padding * 2,
+                paddingHorizontal: SIZES.padding * 2,
               }}
             >
               {/* Email Address */}
@@ -128,57 +122,18 @@ const LogInScreen = inject('shop')(
               />
             </View>
 
-            {/* //! Don't allow button until all fields are filled out */}
             {/* Login Button */}
+            <RouteButton disabled={processing} onPress={loginUser}>
+              {processing ? 'Processing...' : 'Log In'}
+            </RouteButton>
+
             <View
               style={{
                 paddingVertical: SIZES.padding,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'white',
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  backgroundColor: processing ? '#777' : COLORS.primary,
-                  width: '100%',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  ...styles.shadow,
-                  borderRadius: SIZES.radius * 2,
-                }}
-                disabled={processing}
-                onPress={loginUser}
-              >
-                <Text
-                  style={{
-                    color: COLORS.white,
-                    ...FONTS.h3,
-                  }}
-                >
-                  {processing ? 'Processing...' : 'Log In'}
-                </Text>
-                <Ionicons
-                  name='arrow-forward'
-                  style={{
-                    color: COLORS.white,
-                    position: 'absolute',
-                    right: 20,
-                    // ...FONTS.h3,
-                  }}
-                  size={26}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                paddingVertical: SIZES.padding,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'white',
+                paddingHorizontal: SIZES.padding * 2,
               }}
             >
               <Text onPress={() => navigation.navigate('Register')}>

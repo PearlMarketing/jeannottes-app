@@ -19,18 +19,14 @@ import Header from '../../components/Header';
 import Loader from '../../components/Loader';
 import StyledTextInput from '../../components/TextInput';
 
-import { icons, SIZES, COLORS, FONTS } from '../../constants';
+import { SIZES, COLORS, FONTS } from '../../constants';
 import Service from '../../services/services';
 import ShopToast from '../../components/ShopToast';
 import RenderSeparator from '../../components/RenderSeparator';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 
 const MoreScreen = inject('shop')(
   observer(({ shop, route, navigation }) => {
-    function FocusAwareStatusBar(props) {
-      const isFocused = useIsFocused();
-      return isFocused ? <StatusBar {...props} /> : null;
-    }
-
     return (
       <SafeAreaView
         style={styles.container}
